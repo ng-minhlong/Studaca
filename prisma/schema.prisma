@@ -1,0 +1,857 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Test {
+  id   String @id @default(uuid())
+  test String
+}
+
+model User {
+  id            String       @id
+  name          String
+  email         String
+  emailVerified Boolean      @default(false)
+  image         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  courses       Course[]
+  enrollment    Enrollment[]
+
+  stripeCustomerId String? @unique
+
+  role       String?
+  banned     Boolean?  @default(false)
+  banReason  String?
+  banExpires DateTime?
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  impersonatedBy String?
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Course {
+  id String @id @default(uuid())
+
+  title            String
+  description      String
+  fileKey          String
+  price            Int
+  duration         Int
+  level            CouseLevel   @default(Beginner)
+  category         String
+  smallDescription String
+  slug             String       @unique
+  status           CourseStatus @default(Draft)
+
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  chapters   Chapter[]
+  enrollment Enrollment[]
+}
+
+enum CourseStatus {
+  Draft
+  Published
+  Archived
+}
+
+enum CouseLevel {
+  Beginner
+  Intermediate
+  Advanced
+}
+
+model Chapter {
+  id       String @id @default(uuid())
+  title    String
+  position Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  String
+  lessons   Lesson[]
+}
+
+model Lesson {
+  id           String  @id @default(uuid())
+  title        String
+  description  String?
+  thumbnailKey String?
+  videoKey     String?
+  position     Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  chapterId String
+}
+
+model Enrollment {
+  id String @id @default(uuid())
+
+  amount Int
+  status EnrollmentStatus @default(Pending)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  @@unique([userId, courseId])
+}
+
+enum EnrollmentStatus {
+  Pending
+  Active
+  Cancelled
+}
+
+
+
+
+
+
+// ==========================================
+// NEW ENUMS FOR NEW TABLES
+// ==========================================
+
+enum HsaTestType {
+  tsa
+  v_act @map("v-act")
+  hsa
+}
+
+enum HsaModule {
+  toan      @map("toán")
+  van       @map("văn")
+  khoa_hoc  @map("khoa học")
+  tieng_anh @map("tiếng anh")
+  su_dia    @map("sử địa")
+}
+
+enum HsaSubmodule {
+  toan     @map("toán")
+  van      @map("văn")
+  vat_ly   @map("vật lý")
+  hoa      @map("hóa")
+  sinh     @map("sinh")
+  su       @map("sử")
+  dia      @map("địa")
+}
+
+enum HsaLevel {
+  hsk1
+  hsk2
+  hsk3
+  none @map("")
+}
+
+enum HsaPartTestType {
+  Writing
+  Reading
+  Listening
+}
+
+enum JptLevel {
+  n1
+  n2
+  n3
+  n4
+  n5
+}
+
+// ==========================================
+// NEW TABLES (POSTGRESQL COMPATIBLE)
+// ==========================================
+
+model DigitalSatQuestionBankMath {
+  number          Int     @id @default(autoincrement())
+  idQuestion      String  @map("id_question")
+  typeQuestion    String  @map("type_question")
+  questionContent String  @map("question_content")
+  answer1         String  @map("answer_1")
+  answer2         String  @map("answer_2")
+  answer3         String  @map("answer_3")
+  answer4         String  @map("answer_4")
+  correctAnswer   String  @map("correct_answer")
+  explanation     String
+  imageLink       String  @map("image_link")
+  category        String
+
+  @@map("digital_sat_question_bank_math")
+}
+
+model DigitalSatQuestionBankVerbal {
+  number          Int     @id @default(autoincrement())
+  idQuestion      String  @map("id_question")
+  typeQuestion    String  @map("type_question")
+  questionContent String  @map("question_content")
+  answer1         String  @map("answer_1")
+  answer2         String  @map("answer_2")
+  answer3         String  @map("answer_3")
+  answer4         String  @map("answer_4")
+  correctAnswer   String  @map("correct_answer")
+  explanation     String
+  imageLink       String  @map("image_link")
+  category        String
+
+  @@map("digital_sat_question_bank_verbal")
+}
+
+model DigitalSatTestList {
+  number                   Int       @id @default(autoincrement())
+  idTest                   String    @map("id_test")
+  testname                 String
+  numberQuestion           String    @map("number_question")
+  time                     Int
+  testType                 String    @map("test_type")
+  questionChoose           String    @map("question_choose")
+  fullTestSpecificModule   Json      @map("full_test_specific_module")
+  tag                      String
+  book                     String
+  testCategory             String    @map("test_category")
+  tokenNeed                Int       @map("token_need")
+  timeAllow                Int       @map("time_allow")
+  createdAt                DateTime? @map("created_at")
+  updatedAt                DateTime? @map("updated_at")
+  testTakerCount           Int       @map("test_taker_count")
+  allowPreviewQuestion     Boolean   @default(false) @map("allow_preview_question")
+
+  @@map("digital_sat_test_list")
+}
+
+model HsaTests {
+  number               Int          @id @default(autoincrement())
+  testType             HsaTestType  @map("test_type")
+  idTest               String       @map("id_test")
+  testname             String
+  numberQuestion       Int          @map("number_question")
+  time                 Int
+  module               HsaModule
+  submodule            HsaSubmodule
+  year                 String
+  createdAt            DateTime     @map("created_at")
+  testcode             Json
+  answer               Json
+  isFinishAnswer       Boolean      @map("isFinishAnswer")
+  tokenNeed            Int          @default(0) @map("token_need")
+  timeAllow            Int          @default(0) @map("time_allow")
+  book                 String?
+  testTakerCount       Int?         @map("test_taker_count")
+  allowPreviewQuestion Boolean      @default(false) @map("allow_preview_question")
+
+  @@map("hsa_tests")
+}
+
+model HsaTestLists {
+  number               Int      @id @default(autoincrement())
+  idTest               String   @map("id_test")
+  testname             String
+  time                 Int
+  level                HsaLevel
+  tokenNeed            Int      @default(0) @map("token_need")
+  timeAllow            Int      @map("time_allow")
+  testTakerCount       Int      @map("test_taker_count")
+  numberQuestion       Int      @map("number_question")
+  testType             String   @map("test_type")
+  createdAt            DateTime @map("created_at")
+  allowPreviewQuestion Int      @default(0) @map("allow_preview_question")
+
+  @@map("hsa_test_lists")
+}
+
+model HsaTestPartList {
+  number               Int             @id @default(autoincrement())
+  idTest               String          @map("id_test")
+  testType             HsaPartTestType @map("test_type")
+  testContent          Json            @map("test_content")
+  audioContext         String          @map("audio_context")
+  correctAnswer        Json            @map("correct_answer")
+  level                JptLevel?
+  idCollection         String          @map("id_collection")
+  testname             String
+  tokenNeed            Int             @default(0) @map("token_need")
+  timeAllow            Int             @default(0) @map("time_allow")
+  time                 Int             @default(0)
+  createdAt            DateTime        @default(now()) @map("created_at")
+  testTakerCount       Int?            @default(0) @map("test_taker_count")
+  book                 String?
+  numberQuestion       Int?            @default(0) @map("number_question")
+  allowPreviewQuestion Boolean         @default(false) @map("allow_preview_question")
+
+  @@map("hsa_test_part_list")
+}
+
+model IeltsListeningTestListPart {
+  number                   Int     @id @default(autoincrement())
+  idPart                   String  @map("id_part")
+  part                     Int
+  duration                 Int
+  numberQuestionOfThisPart Int     @default(10) @map("number_question_of_this_part")
+  groupQuestion            Json    @map("group_question")
+  category                 Json
+  note                     String
+  correctAnswer            Json    @map("correct_answer")
+  testname                 String?
+  testTakerCount           Int?    @map("test_taker_count")
+  tokenNeed                Int?    @map("token_need")
+  time                     Int?    @default(10)
+  numberQuestion           Int?    @default(10) @map("number_question")
+  timeAllow                Int?    @map("time_allow")
+
+  @@map("ielts_listening_test_list_part")
+}
+
+model IeltsListeningTestList {
+  number               Int       @id @default(autoincrement())
+  idTest               String    @map("id_test")
+  idFromStudy4         Int       @map("id_from_study4")
+  testname             String
+  questionChoose       String    @map("question_choose")
+  book                 String
+  tag                  String
+  testType             String    @map("test_type")
+  time                 Int
+  numberQuestion       Int       @map("number_question")
+  tokenNeed            Int       @map("token_need")
+  timeAllow            Int       @map("time_allow")
+  createdAt            DateTime? @map("created_at")
+  updatedAt            DateTime? @map("updated_at")
+  testTakerCount       Int       @map("test_taker_count")
+  allowPreviewQuestion Boolean   @default(false) @map("allow_preview_question")
+
+  @@map("ielts_listening_test_list")
+}
+
+model IeltsReadingTestListPart {
+  number                   Int     @id @default(autoincrement())
+  idPart                   String  @map("id_part")
+  part                     Int
+  duration                 Int
+  numberQuestionOfThisPart Int     @map("number_question_of_this_part")
+  paragraph                String
+  groupQuestion            Json    @map("group_question")
+  category                 Json
+  note                     String
+  correctAnswer            Json    @map("correct_answer")
+  testname                 String?
+  testTakerCount           Int?    @map("test_taker_count")
+  tokenNeed                Int?    @map("token_need")
+  time                     Int?    @default(20)
+  numberQuestion           Int?    @default(12) @map("number_question")
+  timeAllow                Int?    @map("time_allow")
+
+  @@map("ielts_reading_test_list_part")
+}
+
+model IeltsReadingTestList {
+  number               Int       @id @default(autoincrement())
+  idTest               String?   @map("id_test")
+  idFromStudy4         Int       @map("id_from_study4")
+  testname             String
+  questionChoose       String    @map("question_choose")
+  book                 String
+  tag                  String
+  testType             String    @map("test_type")
+  time                 Int
+  numberQuestion       Int       @map("number_question")
+  tokenNeed            Int       @map("token_need")
+  timeAllow            String    @map("time_allow")
+  createdAt            DateTime? @map("created_at")
+  updatedAt            DateTime? @map("updated_at")
+  testTakerCount       Int       @map("test_taker_count")
+  allowPreviewQuestion Boolean   @map("allow_preview_question")
+
+  @@map("ielts_reading_test_list")
+}
+
+model IeltsSpeakingTestListPart {
+  number          Int     @id @default(autoincrement())
+  idPart          Int?    @map("id_part")
+  topic           String
+  stt             Int
+  questionContent String  @map("question_content")
+  sample          String
+  importantAdd    String  @map("important_add")
+  speakingPart    Int     @map("speaking_part")
+  testname        String?
+  testTakerCount  Int?    @map("test_taker_count")
+  tokenNeed       Int?    @map("token_need")
+
+  @@map("ielts_speaking_test_list_part")
+}
+
+model IeltsSpeakingTestList {
+  number               Int       @id @default(autoincrement())
+  idTest               String    @map("id_test")
+  testname             String
+  questionChoose       String    @map("question_choose")
+  book                 String
+  numberQuestion       Int       @default(3) @map("number_question")
+  time                 Int       @default(15)
+  tag                  String
+  testType             String    @map("test_type")
+  tokenNeed            Int       @map("token_need")
+  timeAllow            Int       @map("time_allow")
+  createdAt            DateTime? @map("created_at")
+  updatedAt            DateTime? @map("updated_at")
+  testTakerCount       Int       @map("test_taker_count")
+  allowPreviewQuestion Boolean   @map("allow_preview_question")
+
+  @@map("ielts_speaking_test_list")
+}
+
+model IeltsWritingTestListPart {
+  number          Int     @id @default(autoincrement())
+  idPart          Int?    @map("id_part")
+  task            Int
+  questionType    String  @map("question_type")
+  questionContent String  @map("question_content")
+  imageLink       String  @map("image_link")
+  time            Int     @default(20)
+  sampleWriting   String  @map("sample_writing")
+  importantAdd    String  @map("important_add")
+  testname        String?
+  testTakerCount  Int?    @map("test_taker_count")
+  tokenNeed       Int?    @map("token_need")
+  numberQuestion  Int?    @default(1) @map("number_question")
+  timeAllow       Int?    @default(1) @map("time_allow")
+
+  @@map("ielts_writing_test_list_part")
+}
+
+model IeltsWritingTestList {
+  number               Int       @id @default(autoincrement())
+  idTest               String    @map("id_test")
+  testname             String
+  questionChoose       String    @map("question_choose")
+  time                 Int
+  book                 String
+  numberQuestion       Int       @default(2) @map("number_question")
+  tag                  String
+  testType             String    @map("test_type")
+  tokenNeed            Int       @map("token_need")
+  timeAllow            Int       @map("time_allow")
+  createdAt            DateTime? @map("created_at")
+  updatedAt            DateTime? @map("updated_at")
+  testTakerCount       Int       @map("test_taker_count")
+  allowPreviewQuestion Boolean   @default(true) @map("allow_preview_question")
+
+  @@map("ielts_writing_test_list")
+}
+// ==========================================
+// NEW ENUMS FOR PART 2 TABLES
+// ==========================================
+
+enum JlptLevel {
+  n1
+  n2
+  n3
+  n4
+  n5
+}
+
+enum JlptTestPartType {
+  Vocabulary
+  Grammar
+  Reading
+  Listening
+}
+
+enum HskLevel {
+  hsk1
+  hsk2
+  hsk3
+  none @map("")
+}
+
+enum HskTestPartType {
+  Writing
+  Reading
+  Listening
+}
+
+// ==========================================
+// NEW TABLES PART 2 (POSTGRESQL COMPATIBLE)
+// ==========================================
+
+model JlptTestList {
+  number               Int       @id @default(autoincrement())
+  idTest               String    @map("id_test")
+  testname             String
+  time                 Int
+  level                JlptLevel
+  tokenNeed            Int       @map("token_need")
+  timeAllow            Int       @map("time_allow")
+  testTakerCount       Int       @map("test_taker_count")
+  questionChoose       Json?     @map("question_choose")
+  numberQuestion       Int       @map("number_question")
+  testType             String    @map("test_type")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  allowPreviewQuestion Boolean   @default(false) @map("allow_preview_question")
+
+  @@map("jlpt_test_list")
+}
+
+model JlptTestPartList {
+  number               Int              @id @default(autoincrement())
+  idTest               String           @map("id_test")
+  testType             JlptTestPartType @map("test_type")
+  testContent          Json             @map("test_content")
+  correctAnswer        Json             @map("correct_answer")
+  level                JlptLevel?
+  idCollection         String           @map("id_collection")
+  testname             String
+  tokenNeed            Int              @default(0) @map("token_need")
+  timeAllow            Int              @default(0) @map("time_allow")
+  time                 Int              @default(0)
+  createdAt            DateTime         @default(now()) @map("created_at")
+  testTakerCount       Int?             @default(0) @map("test_taker_count")
+  book                 String?
+  numberQuestion       Int?             @default(0) @map("number_question")
+  allowPreviewQuestion Boolean?         @default(false) @map("allow_preview_question")
+
+  @@map("jlpt_test_part_list")
+}
+
+model ThptqgQuestion {
+  number               Int       @id @default(autoincrement())
+  idTest               String    @map("id_test")
+  subject              String
+  year                 String
+  testname             String
+  book                 String?
+  testType             String    @default("Full Test") @map("test_type")
+  testcode             Json
+  time                 String
+  numberQuestion       String    @map("number_question")
+  answer               Json
+  tokenNeed            Int       @map("token_need")
+  roleAccess           String    @map("role_access")
+  permissiveManagement String    @map("permissive_management")
+  timeAllow            Int       @map("time_allow")
+  createdAt            DateTime? @map("created_at")
+  updatedAt            DateTime? @map("updated_at")
+  testTakerCount       Int       @map("test_taker_count")
+  allowPreviewQuestion Boolean   @default(false) @map("allow_preview_question")
+
+  @@map("thptqg_question")
+}
+
+model ToeicListeningTestList {
+  number               Int      @id @default(autoincrement())
+  idTest               String   @map("id_test")
+  idFromStudy4         String   @map("id_from_study4")
+  testname             String
+  questionChoice       Json     @map("question_choice")
+  book                 String
+  numberQuestion       Int      @default(100) @map("number_question")
+  tag                  String
+  testType             String   @map("test_type")
+  time                 Int      @default(45)
+  tokenNeed            Int      @map("token_need")
+  timeAllow            Int      @map("time_allow")
+  createdAt            DateTime @map("created_at")
+  updatedAt            DateTime @map("updated_at")
+  testTakerCount       Int      @map("test_taker_count")
+  audioLinkContext     String   @map("audio_link_context")
+  allowPreviewQuestion Boolean  @default(false) @map("allow_preview_question")
+
+  @@map("toeic_listening_test_list")
+}
+
+model ToeicListeningTestListPart {
+  number          Int    @id @default(autoincrement())
+  idPart          Int    @map("id_part")
+  questionContent Json   @map("question_content")
+  part            Int
+  partName        String @map("part_name")
+  answer          Json
+  numberQuestion  Int    @map("number_question")
+
+  @@map("toeic_listening_test_list_part")
+}
+
+model ToeicReadingTestList {
+  number               Int      @id @default(autoincrement())
+  idFromStudy4         String   @map("id_from_study4")
+  idTest               String   @map("id_test")
+  testname             String
+  questionChoice       Json     @map("question_choice")
+  book                 String
+  numberQuestion       Int      @default(100) @map("number_question")
+  tag                  String
+  testType             String   @map("test_type")
+  time                 Int      @default(75)
+  tokenNeed            Int      @map("token_need")
+  timeAllow            Int      @map("time_allow")
+  createdAt            DateTime @map("created_at")
+  updatedAt            DateTime @map("updated_at")
+  testTakerCount       Int      @map("test_taker_count")
+  allowPreviewQuestion Boolean  @default(false) @map("allow_preview_question")
+
+  @@map("toeic_reading_test_list")
+}
+
+model ToeicReadingTestListPart {
+  number          Int  @id @default(autoincrement())
+  idPart          Int  @map("id_part")
+  questionContent Json @map("question_content")
+  part            Int
+  partName        Int  @map("part_name")
+  answer          Json
+  numberQuestion  Int  @map("number_question")
+
+  @@map("toeic_reading_test_list_part")
+}
+
+model ToeicSpeakingTestList {
+  number               Int      @id @default(autoincrement())
+  idTest               String   @map("id_test")
+  idFromStudy4         Int      @map("id_from_study4")
+  testname             String
+  time                 Int
+  book                 String
+  numberQuestion       Int      @map("number_question")
+  tokenNeed            Int      @map("token_need")
+  timeAllow            Int      @map("time_allow")
+  createdAt            DateTime @map("created_at")
+  testTakerCount       Int      @map("test_taker_count")
+  allowPreviewQuestion Boolean  @default(true) @map("allow_preview_question")
+
+  @@map("toeic_speaking_test_list")
+}
+
+model ToeicSpeakingTestListPart {
+  number       Int    @id @default(autoincrement())
+  orderNum     Int    @map("order_num")
+  idTest       String @map("id_test")
+  questionName String @map("question_name")
+  content      Json
+
+  @@map("toeic_speaking_test_list_part")
+}
+
+model ToeicWritingTestList {
+  number               Int      @id @default(autoincrement())
+  idTest               String   @map("id_test")
+  idFromStudy4         Int      @map("id_from_study4")
+  testname             String
+  time                 Int
+  book                 String
+  numberQuestion       Int      @map("number_question")
+  tokenNeed            Int      @map("token_need")
+  timeAllow            Int      @map("time_allow")
+  createdAt            DateTime @map("created_at")
+  testTakerCount       Int      @map("test_taker_count")
+  allowPreviewQuestion Boolean  @default(true) @map("allow_preview_question")
+
+  @@map("toeic_writing_test_list")
+}
+
+model ToeicWritingTestListPart {
+  number       Int    @id @default(autoincrement())
+  orderNum     Int    @map("order_num")
+  idTest       String @map("id_test")
+  questionName String @map("question_name")
+  content      Json
+
+  @@map("toeic_writing_test_list_part")
+}
+
+model TopikListeningTestList {
+  number               Int       @id @default(autoincrement())
+  idTest               String    @map("id_test")
+  idCrawl              String    @map("id_crawl")
+  testType             String    @map("test_type")
+  testname             String
+  numberQuestion       Int       @map("number_question")
+  time                 Int
+  book                 String?
+  generalContext       Json?     @map("general_context")
+  testcode             String
+  correctAnswer        Json      @map("correct_answer")
+  tokenNeed            Int       @map("token_need")
+  roleAccess           String    @map("role_access")
+  permissiveManagement String    @map("permissive_management")
+  timeAllow            Int       @map("time_allow")
+  createdAt            DateTime? @map("created_at")
+  updatedAt            DateTime? @map("updated_at")
+  testTakerCount       Int       @map("test_taker_count")
+  allowPreviewQuestion Boolean   @map("allow_preview_question")
+
+  @@map("topik_listening_test_list")
+}
+
+model TopikReadingTestList {
+  number               Int       @id @default(autoincrement())
+  idTest               String    @map("id_test")
+  idCrawl              String    @map("id_crawl")
+  testType             String    @map("test_type")
+  testname             String
+  book                 String?
+  generalContext       Json?     @map("general_context")
+  numberQuestion       Int       @map("number_question")
+  time                 Int
+  testcode             String
+  correctAnswer        String    @map("correct_answer")
+  tokenNeed            Int       @map("token_need")
+  roleAccess           String    @map("role_access")
+  permissiveManagement String    @map("permissive_management")
+  timeAllow            Int       @map("time_allow")
+  createdAt            DateTime? @map("created_at")
+  updatedAt            DateTime? @map("updated_at")
+  testTakerCount       Int       @map("test_taker_count")
+  allowPreviewQuestion Boolean   @map("allow_preview_question")
+
+  @@map("topik_reading_test_list")
+}
+
+model VactTests {
+  number               Int          @id @default(autoincrement())
+  testType             HsaTestType  @map("test_type")
+  idTest               String       @map("id_test")
+  testname             String
+  book                 String?
+  numberQuestion       Int          @map("number_question")
+  time                 Int
+  module               HsaModule
+  submodule            HsaSubmodule
+  year                 String
+  createdAt            DateTime     @map("created_at")
+  testcode             Json
+  answer               Json
+  isFinishAnswer       Boolean      @map("isFinishAnswer")
+  tokenNeed            Int          @default(0) @map("token_need")
+  timeAllow            Int          @default(0) @map("time_allow")
+  testTakerCount       Int          @map("test_taker_count")
+  allowPreviewQuestion Boolean?     @default(false) @map("allow_preview_question")
+
+  @@map("vact_tests")
+}
+
+model HskTestList {
+  number               Int      @id @default(autoincrement())
+  idTest               String   @map("id_test")
+  testname             String
+  time                 Int
+  level                HskLevel
+  tokenNeed            Int      @default(0) @map("token_need")
+  timeAllow            Int      @map("time_allow")
+  testTakerCount       Int      @map("test_taker_count")
+  numberQuestion       Int      @map("number_question")
+  testType             String   @map("test_type")
+  createdAt            DateTime @map("created_at")
+  allowPreviewQuestion Int      @default(0) @map("allow_preview_question")
+
+  @@map("hsk_test_list")
+}
+
+model HskTestPartList {
+  number               Int             @id @default(autoincrement())
+  idTest               String          @map("id_test")
+  testType             HskTestPartType @map("test_type")
+  testContent          Json            @map("test_content")
+  audioContext         String          @map("audio_context")
+  correctAnswer        Json            @map("correct_answer")
+  level                JlptLevel?
+  idCollection         String          @map("id_collection")
+  testname             String
+  tokenNeed            Int             @default(0) @map("token_need")
+  timeAllow            Int             @default(0) @map("time_allow")
+  time                 Int             @default(0)
+  createdAt            DateTime        @default(now()) @map("created_at")
+  testTakerCount       Int?            @default(0) @map("test_taker_count")
+  book                 String?
+  numberQuestion       Int?            @default(0) @map("number_question")
+  allowPreviewQuestion Boolean         @default(false) @map("allow_preview_question")
+
+  @@map("hsk_test_part_list")
+}
+
+model TestCollection {
+  number               Int      @id @default(autoincrement())
+  idCollection         String   @map("id_collection")
+  collectionName       String   @map("collection_name")
+  typeCollection       String   @map("type_collection")
+  testChoose           Json     @map("test_choose")
+  book                 String
+  tag                  String
+  time                 Int
+  tokenNeed            Int      @map("token_need")
+  roleAccess           String   @map("role_access")
+  permissiveManagement String   @map("permissive_management")
+  timeAllow            Int      @map("time_allow")
+  createdAt            DateTime @map("created_at")
+  updatedAt            DateTime @map("updated_at")
+  testTakerCount       Int      @map("test_taker_count")
+
+  @@map("test_collection")
+}

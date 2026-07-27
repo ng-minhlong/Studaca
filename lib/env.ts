@@ -1,0 +1,31 @@
+import { createEnv } from "@t3-oss/env-nextjs";
+import * as z from "zod";
+
+export const env = createEnv({
+  server: {
+    DATABASE_URL: z.url(),
+    BETTER_AUTH_URL: z.url(),
+    BETTER_AUTH_SECRET: z.string().min(1),
+    AUTH_GITHUB_CLIENT_ID: z.string().default(""),
+    AUTH_GITHUB_SECRET: z.string().default(""),
+    RESEND_API_KEY: z.string().default(""),
+    ARCJET_KEY: z.string().default(""),
+    ARCJET_ENV: z.string().default(""),
+    AWS_ACCESS_KEY_ID: z.string().default(""),
+    AWS_SECRET_ACCESS_KEY: z.string().default(""),
+    AWS_ENDPOINT_URL_S3: z.string().default(""),
+    AWS_ENDPOINT_URL_IAM: z.string().default(""),
+    AWS_REGION: z.string().default(""),
+    STRIPE_SECRET_KEY: z.string().default(""),
+    STRIPE_WEBHOOK_SECRET: z.string().default(""),
+  },
+  client: {
+    NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES: z.string().default(""),
+  },
+
+  experimental__runtimeEnv: {
+    // NEXT_PUBLIC_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_PUBLISHABLE_KEY,
+    NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES:
+      process.env.NEXT_PUBLIC_S3_BUCKET_NAME_IMAGES,
+  },
+});
