@@ -1,0 +1,1 @@
+export { ExamRenderer } from './ExamRenderer'

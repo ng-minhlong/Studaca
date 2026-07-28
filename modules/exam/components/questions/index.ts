@@ -1,0 +1,6 @@
+export { MCQQuestion } from './MCQQuestion'
+export { CompletionQuestion } from './CompletionQuestion'
+export { MultiSelectQuestion } from './MultiSelectQuestion'
+export { EssayQuestion } from './EssayQuestion'
+export { RecordingQuestion } from './RecordingQuestion'
+export { QuestionRenderer } from './QuestionRenderer'

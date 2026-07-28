@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/sidebar";
 import Logo from "@/public/lms-logo.png";
 import {
+  BookCheck,
   CameraIcon,
   ChartBarIcon,
   CircleHelpIcon,
@@ -42,6 +43,11 @@ const data = {
       title: "Courses",
       url: "/admin/courses",
       icon: <ListIcon />,
+    },
+    {
+      title: "Test & Practice Management",
+      url: "/admin/tests",
+      icon: <BookCheck />,
     },
     {
       title: "Analytics",
