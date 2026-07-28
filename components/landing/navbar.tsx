@@ -95,6 +95,9 @@ export function Navbar() {
                   <Link href="/profile">Profile</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                  <Link href="/user/dashboard/credit">Credit</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link href="/history">History</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
