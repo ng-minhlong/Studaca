@@ -1,1 +1,1 @@
-export { getMockExam, getAllMockExams } from './mock.adapter'
+export { getMockExam, getMockResult } from './mock.adapter';

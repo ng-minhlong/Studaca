@@ -1,24 +1,39 @@
 // Types
-export * from './types'
+export type { Exam, Section, Block, Question, Choice, Answer, ExamType } from './types';
+export type { Result, QuestionResult, ScoreBreakdown, ResultSummary, Statistics } from './types';
+export type { NavigationState, TimerState, ExamState } from './types';
 
-// Providers & Hooks
-export { ExamProvider } from './providers/ExamProvider'
-export { useExam } from './hooks/useExam'
+// Engine
+export { ExamProvider, useExam, ExamContext } from './engine';
+export { ResultProvider, useResult, ResultContext } from './engine/result';
 
 // Renderers
-export { ExamRenderer } from './renderers'
+export { ExamRenderer, ResultRenderer } from './renderers';
 
 // Layouts
-export { Layout1SingleQuestion, Layout2ReadingSplit, Layout3Listening } from './layouts'
+export { Layout1, Layout2, Layout3 } from './layouts/test';
+export { ResultLayout1, ResultLayout2, ResultLayout3 } from './layouts/result';
 
-// Components - Panels
-export * from './components/panels'
+// Components
+export {
+  HeaderPanel,
+  TimerPanel,
+  QuestionPanel,
+  SidebarPanel,
+  NavigationPanel,
+  ScorePanel,
+  BandScorePanel,
+  ReviewPanel,
+  QuestionRenderer,
+  AccuracyChart,
+  SectionBreakdownChart,
+} from './components';
 
-// Components - Questions
-export * from './components/questions'
+// Registry
+export { layoutRegistry, resultLayoutRegistry } from './registry';
 
 // Adapters
-export { getMockExam, getAllMockExams } from './adapters'
+export { getMockExam, getMockResult } from './adapters';
 
-// Mocks
-export { LAYOUT1_MOCK_EXAM, LAYOUT2_MOCK_EXAM, LAYOUT3_MOCK_EXAM } from './mocks'
+// Initialization
+export { initializeExamModule } from './init';

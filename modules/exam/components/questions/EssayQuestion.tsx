@@ -1,39 +1,35 @@
-'use client'
+'use client';
 
-import React from 'react'
-import { useExam } from '../../hooks/useExam'
-import type { Question } from '../../types'
+import React from 'react';
+import type { Answer } from '../../types';
 
 interface EssayQuestionProps {
-  question: Question
+  question: any;
+  selectedAnswer?: Answer;
+  onAnswer: (answer: Answer) => void;
 }
 
-/**
- * EssayQuestion
- * 
- * Free-form text/essay question.
- * User enters longer text in a textarea.
- */
-export function EssayQuestion({ question }: EssayQuestionProps) {
-  const { answerQuestion, getAnswer } = useExam()
-  const currentAnswer = (getAnswer(question.id) as string) || ''
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    answerQuestion(question.id, e.target.value)
-  }
-
-  const wordCount = currentAnswer.trim().split(/\s+/).filter(w => w.length > 0).length
+export function EssayQuestion({ question, selectedAnswer, onAnswer }: EssayQuestionProps) {
+  const text = selectedAnswer?.type === 'Essay' ? selectedAnswer.text : '';
 
   return (
-    <div>
+    <div className="space-y-4">
       <textarea
-        value={currentAnswer}
-        onChange={handleChange}
-        placeholder={question.placeholder || 'Enter your essay...'}
+        value={text}
+        onChange={(e) =>
+          onAnswer({
+            type: 'Essay',
+            text: e.target.value,
+          })
+        }
+        placeholder="Write your essay here..."
         rows={10}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+        className="w-full px-4 py-3 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none font-mono text-sm"
       />
-      <div className="mt-2 text-sm text-gray-600">Words: {wordCount}</div>
+      <div className="flex justify-between text-sm text-muted-foreground">
+        <span>{text.length} characters</span>
+        <span>{text.split(/\s+/).filter(w => w).length} words</span>
+      </div>
     </div>
-  )
+  );
 }

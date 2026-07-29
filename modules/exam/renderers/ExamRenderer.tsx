@@ -1,46 +1,40 @@
-'use client'
-
-import React from 'react'
-import { LayoutId } from '../types'
-import { Layout1SingleQuestion, Layout2ReadingSplit, Layout3Listening } from '../layouts'
-import { useExam } from '../hooks/useExam'
+'use client';
 
 /**
- * ExamRenderer
- * 
- * Routes exam rendering based on layout.id
- * Switch ONLY by layout.id - NEVER by exam type.
- * 
- * This is the core rendering decision point.
- * Every exam (IELTS, TOEIC, SAT, etc.) uses one of these layouts.
+ * Exam Renderer
+ * Orchestrates exam rendering based on layout ID
+ * Acts as a dispatcher that routes to the correct layout component
  */
-export function ExamRenderer() {
-  const { exam } = useExam()
 
-  if (!exam) {
-    return <div className="flex items-center justify-center h-screen text-gray-600">Loading exam...</div>
-  }
+import React from 'react';
+import type { Exam } from '../types';
+import { layoutRegistry } from '../registry';
 
-  const layoutId = exam.layout.id
+interface ExamRendererProps {
+  exam: Exam;
+}
 
-  switch (layoutId) {
-    case LayoutId.SINGLE_QUESTION:
-      return <Layout1SingleQuestion />
+export function ExamRenderer({ exam }: ExamRendererProps) {
+  const layoutId = exam.layout.id;
+  const LayoutComponent = layoutRegistry.get(layoutId);
 
-    case LayoutId.READING_SPLIT:
-      return <Layout2ReadingSplit />
-
-    case LayoutId.LISTENING:
-      return <Layout3Listening />
-
-    default:
-      return (
-        <div className="flex items-center justify-center h-screen text-red-600">
-          <div className="text-center">
-            <p className="text-xl font-semibold mb-2">Unknown Layout</p>
-            <p className="text-gray-600">Layout ID: {layoutId}</p>
-          </div>
+  if (!LayoutComponent) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-foreground mb-4">Layout Not Found</h2>
+          <p className="text-muted-foreground">
+            The layout &quot;{layoutId}&quot; is not registered. Available layouts:
+          </p>
+          <ul className="mt-4 text-sm text-muted-foreground">
+            {Object.keys(layoutRegistry.getAll()).map(id => (
+              <li key={id} className="font-mono">{id}</li>
+            ))}
+          </ul>
         </div>
-      )
+      </div>
+    );
   }
+
+  return <LayoutComponent exam={exam} />;
 }

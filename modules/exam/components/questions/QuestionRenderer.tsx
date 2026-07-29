@@ -1,39 +1,77 @@
-import React from 'react'
-import type { Question } from '../../types'
-import { MCQQuestion } from './MCQQuestion'
-import { CompletionQuestion } from './CompletionQuestion'
-import { MultiSelectQuestion } from './MultiSelectQuestion'
-import { EssayQuestion } from './EssayQuestion'
-import { RecordingQuestion } from './RecordingQuestion'
+'use client';
+
+import React from 'react';
+import type { Question, Answer } from '../../types';
+import { MCQQuestion } from './MCQQuestion';
+import { MultiSelectQuestion } from './MultiSelectQuestion';
+import { CompletionQuestion } from './CompletionQuestion';
+import { EssayQuestion } from './EssayQuestion';
+import { RecordingQuestion } from './RecordingQuestion';
 
 interface QuestionRendererProps {
-  question: Question
+  question: Question;
+  selectedAnswer?: Answer;
+  onAnswer: (answer: Answer) => void;
 }
 
-/**
- * QuestionRenderer
- * 
- * Routes question rendering based on question type.
- * Switches ONLY by question.type - never by exam type.
- */
-export function QuestionRenderer({ question }: QuestionRendererProps) {
+export function QuestionRenderer({
+  question,
+  selectedAnswer,
+  onAnswer,
+}: QuestionRendererProps) {
   switch (question.type) {
-    case 'mcq':
-      return <MCQQuestion question={question} />
+    case 'MCQ':
+      return (
+        <MCQQuestion
+          question={question}
+          selectedAnswer={selectedAnswer}
+          onAnswer={onAnswer}
+        />
+      );
 
-    case 'completion':
-      return <CompletionQuestion question={question} />
+    case 'MultiSelect':
+      return (
+        <MultiSelectQuestion
+          question={question}
+          selectedAnswer={selectedAnswer}
+          onAnswer={onAnswer}
+        />
+      );
 
-    case 'multi-select':
-      return <MultiSelectQuestion question={question} />
+    case 'Completion':
+      return (
+        <CompletionQuestion
+          question={question}
+          selectedAnswer={selectedAnswer}
+          onAnswer={onAnswer}
+        />
+      );
 
-    case 'essay':
-      return <EssayQuestion question={question} />
+    case 'Essay':
+      return (
+        <EssayQuestion
+          question={question}
+          selectedAnswer={selectedAnswer}
+          onAnswer={onAnswer}
+        />
+      );
 
-    case 'recording':
-      return <RecordingQuestion question={question} />
+    case 'Recording':
+      return (
+        <RecordingQuestion
+          question={question}
+          selectedAnswer={selectedAnswer}
+          onAnswer={onAnswer}
+        />
+      );
 
     default:
-      return <div className="text-red-600">Unknown question type: {question.type}</div>
+      return (
+        <div className="p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg">
+          <p className="text-sm text-red-700 dark:text-red-200">
+            Unknown question type: {(question as any).type}
+          </p>
+        </div>
+      );
   }
 }

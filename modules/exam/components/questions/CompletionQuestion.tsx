@@ -1,36 +1,37 @@
-'use client'
+'use client';
 
-import React from 'react'
-import { useExam } from '../../hooks/useExam'
-import type { Question } from '../../types'
+import React from 'react';
+import type { Answer } from '../../types';
 
 interface CompletionQuestionProps {
-  question: Question
+  question: any;
+  selectedAnswer?: Answer;
+  onAnswer: (answer: Answer) => void;
 }
 
-/**
- * CompletionQuestion
- * 
- * Fill-in-the-blank / Completion question.
- * User enters text in a text field.
- */
-export function CompletionQuestion({ question }: CompletionQuestionProps) {
-  const { answerQuestion, getAnswer } = useExam()
-  const currentAnswer = (getAnswer(question.id) as string) || ''
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    answerQuestion(question.id, e.target.value)
-  }
+export function CompletionQuestion({ question, selectedAnswer, onAnswer }: CompletionQuestionProps) {
+  const text = selectedAnswer?.type === 'Completion' ? selectedAnswer.text : '';
 
   return (
-    <div>
+    <div className="space-y-4">
+      <div className="p-4 bg-muted rounded-lg">
+        <p className="text-foreground whitespace-pre-wrap">{question.text}</p>
+      </div>
       <input
         type="text"
-        value={currentAnswer}
-        onChange={handleChange}
-        placeholder={question.placeholder || 'Enter your answer...'}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        value={text}
+        onChange={(e) =>
+          onAnswer({
+            type: 'Completion',
+            text: e.target.value,
+          })
+        }
+        placeholder="Type your answer here..."
+        className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
       />
+      <p className="text-xs text-muted-foreground">
+        Acceptable answers: {question.correctAnswers.join(', ')}
+      </p>
     </div>
-  )
+  );
 }

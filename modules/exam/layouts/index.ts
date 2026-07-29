@@ -1,3 +1,2 @@
-export { Layout1SingleQuestion } from './Layout1SingleQuestion'
-export { Layout2ReadingSplit } from './Layout2ReadingSplit'
-export { Layout3Listening } from './Layout3Listening'
+export { Layout1, Layout2, Layout3 } from './test';
+export { ResultLayout1, ResultLayout2, ResultLayout3 } from './result';

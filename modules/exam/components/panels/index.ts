@@ -1,7 +1,9 @@
-export { HeaderPanel } from './HeaderPanel'
-export { SidebarPanel } from './SidebarPanel'
-export { QuestionPanel } from './QuestionPanel'
-export { PassagePanel } from './PassagePanel'
-export { NavigationPanel } from './NavigationPanel'
-export { AudioPanel } from './AudioPanel'
-export { FooterPanel } from './FooterPanel'
+export { HeaderPanel } from './exam/HeaderPanel';
+export { TimerPanel } from './exam/TimerPanel';
+export { QuestionPanel } from './exam/QuestionPanel';
+export { SidebarPanel } from './exam/SidebarPanel';
+export { NavigationPanel } from './exam/NavigationPanel';
+
+export { ScorePanel } from './result/ScorePanel';
+export { BandScorePanel } from './result/BandScorePanel';
+export { ReviewPanel } from './result/ReviewPanel';

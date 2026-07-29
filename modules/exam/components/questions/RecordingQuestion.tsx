@@ -1,70 +1,65 @@
-'use client'
+'use client';
 
-import React, { useState } from 'react'
-import { useExam } from '../../hooks/useExam'
-import type { Question } from '../../types'
+import React, { useState } from 'react';
+import type { Answer } from '../../types';
 
 interface RecordingQuestionProps {
-  question: Question
+  question: any;
+  selectedAnswer?: Answer;
+  onAnswer: (answer: Answer) => void;
 }
 
-/**
- * RecordingQuestion
- * 
- * Speaking/Recording question.
- * Placeholder for actual audio recording implementation.
- */
-export function RecordingQuestion({ question }: RecordingQuestionProps) {
-  const { answerQuestion, getAnswer } = useExam()
-  const [isRecording, setIsRecording] = useState(false)
-  const currentAnswer = (getAnswer(question.id) as string) || ''
+export function RecordingQuestion({ question, selectedAnswer, onAnswer }: RecordingQuestionProps) {
+  const audioUrl = selectedAnswer?.type === 'Recording' ? selectedAnswer.audioUrl : null;
+  const [isRecording, setIsRecording] = useState(false);
 
-  const handleStartRecording = () => {
-    setIsRecording(true)
-    // In a real app, would start actual recording
-    answerQuestion(question.id, 'recording-started')
-  }
-
-  const handleStopRecording = () => {
-    setIsRecording(false)
-    // In a real app, would stop and save recording
-    answerQuestion(question.id, 'recording-completed')
-  }
+  const handleRecord = () => {
+    setIsRecording(!isRecording);
+    // In a real app, this would integrate with the Web Audio API
+    if (!isRecording) {
+      // Simulate recording completion
+      onAnswer({
+        type: 'Recording',
+        audioUrl: 'https://example.com/audio/recording.wav',
+      });
+    }
+  };
 
   return (
     <div className="space-y-4">
-      <div className="p-6 bg-gray-50 rounded-lg text-center">
-        {isRecording ? (
-          <div>
-            <div className="inline-flex items-center gap-2 mb-4">
-              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-              <span className="text-red-600 font-semibold">Recording...</span>
-            </div>
-            <button
-              onClick={handleStopRecording}
-              className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-            >
-              Stop Recording
-            </button>
-          </div>
-        ) : (
-          <div>
-            <div className="text-4xl mb-4">🎤</div>
-            <button
-              onClick={handleStartRecording}
-              className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Start Recording
-            </button>
-          </div>
-        )}
+      <div className="p-4 bg-muted rounded-lg">
+        <p className="text-foreground">{question.text}</p>
       </div>
 
-      {currentAnswer && currentAnswer !== 'recording-started' && (
-        <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
-          ✓ Recording saved
-        </div>
-      )}
+      <div className="flex flex-col gap-4">
+        <button
+          onClick={handleRecord}
+          className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+            isRecording
+              ? 'bg-red-600 hover:bg-red-700 text-white'
+              : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+          }`}
+        >
+          {isRecording ? '⏹ Stop Recording' : '🎤 Start Recording'}
+        </button>
+
+        {audioUrl && (
+          <div className="p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg">
+            <p className="text-sm text-green-700 dark:text-green-200 font-medium">
+              ✓ Recording saved
+            </p>
+            <audio
+              src={audioUrl}
+              controls
+              className="w-full mt-2 h-8"
+            />
+          </div>
+        )}
+
+        <p className="text-xs text-muted-foreground">
+          Speak clearly and naturally. You will have 1-2 minutes to respond.
+        </p>
+      </div>
     </div>
-  )
+  );
 }
