@@ -16,6 +16,7 @@ export function ExamClientShell({ test }: ExamClientShellProps) {
     <ExamProvider
       test={test}
       onFinish={() => router.push(`/result/${test.type}/${test.id_test}-result-001`)}
+
     >
       <ExamRenderer test={test} />
     </ExamProvider>

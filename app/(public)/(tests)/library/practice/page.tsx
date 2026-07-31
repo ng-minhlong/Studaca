@@ -1,5 +1,6 @@
 import { ItemBrowser } from "../_components/item-browser";
-import { SECTION_CONFIG, simulateFetch } from "../_lib/mock-data";
+import { SECTION_CONFIG } from "../_lib/mock-data";
+import type { LibraryItem } from "../_lib/mock-data";
 
 export default async function PracticeLibraryPage({
   searchParams,
@@ -10,8 +11,13 @@ export default async function PracticeLibraryPage({
   const config = SECTION_CONFIG.practice;
   const activeCategory = category ?? config.defaultCategory;
 
-  // Simulated network call — swap for a real API request when ready.
-  const items = await simulateFetch("practice", activeCategory);
+  // Fetch mock data from the API route (mock data for "practice" section)
+  const res = await fetch(
+    `/api/tests/library/practice?category=${activeCategory}`,
+    { next: { tags: ["library-practice"] } }
+  );
+  const data = await res.json();
+  const items: LibraryItem[] = data.items;
 
   return (
     <>
