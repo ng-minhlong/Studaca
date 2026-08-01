@@ -898,3 +898,451 @@ model TestCollection {
 
   @@map("test_collection")
 }
+
+
+
+
+
+
+// ==========================================
+// COMMON ENUMS
+// ==========================================
+
+enum TestType {
+  full_test @map("full-test")
+  mini_test @map("mini-test")
+  practice
+}
+
+// ==========================================
+// SAVE USER RESULT TABLES (POSTGRESQL COMPATIBLE)
+// ==========================================
+
+model SaveUserResultDigitalSat {
+  number               Int       @id @default(autoincrement())
+  userId               BigInt    @map("user_id")
+  testname             String
+  typeTest             TestType  @map("type_test")
+  correctPercentage    String    @map("correct_percentage")
+  createdAt            DateTime  @map("created_at")
+  idTest               String    @map("id_test")
+  resulttest           String
+  timedotest           String    @map("timedotest")
+  totalQuestionNumber  Int?      @map("total_question_number")
+  correctNumber        Int?      @map("correct_number")
+  incorrectNumber      Int?      @map("incorrect_number")
+  skipNumber           Int?      @map("skip_number")
+  useranswer           Json      @map("useranswer")
+  saveSpecificTime     String    @map("save_specific_time")
+  idResult             String    @map("id_result")
+  isFinished           Boolean   @default(false) @map("is_finished")
+  isCollection         Boolean   @map("is_collection")
+  finishedAt           DateTime? @map("finished_at")
+  idCollection         String?   @map("id_collection")
+  idResultCollection   String?   @map("id_result_collection")
+
+  @@map("save_user_result_digital_sat")
+}
+
+model SaveUserResultHsa {
+  number               Int       @id @default(autoincrement())
+  userId               BigInt    @map("user_id")
+  idTest               String    @map("id_test")
+  testname             String
+  createdAt            DateTime  @map("created_at")
+  timedotest           String    @map("timedotest")
+  resulttest           Float
+  totalQuestionNumber  Int?      @map("total_question_number")
+  correctNumber        Int?      @map("correct_number")
+  incorrectNumber      Int?      @map("incorrect_number")
+  skipNumber           Int?      @map("skip_number")
+  useranswer           Json?     @map("useranswer")
+  idResult             String    @map("id_result")
+  isFinished           Boolean   @default(false) @map("is_finished")
+  isCollection         Boolean   @map("is_collection")
+  finishedAt           DateTime? @map("finished_at")
+  idCollection         String?   @map("id_collection")
+  idResultCollection   String?   @map("id_result_collection")
+  typeTest             TestType  @map("type_test")
+
+  @@map("save_user_result_hsa")
+}
+
+model SaveUserResultHsk {
+  number               Int       @id @default(autoincrement())
+  userId               BigInt    @map("user_id")
+  idTest               String    @map("id_test")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  typeTest             TestType  @map("type_test")
+  correctPercentage    String    @map("correct_percentage")
+  totalQuestionNumber  Int       @map("total_question_number")
+  correctNumber        Int       @map("correct_number")
+  incorrectNumber      Int       @map("incorrect_number")
+  skipNumber           Int       @map("skip_number")
+  resulttest           Float
+  testname             String
+  useranswer           Json?     @map("useranswer")
+  timedotest           String    @map("timedotest")
+  idResult             String    @map("id_result")
+  permissionLink       String    @map("permission_link")
+  isFinished           Boolean   @default(false) @map("is_finished")
+  isCollection         Boolean   @map("is_collection")
+  finishedAt           DateTime? @map("finished_at")
+  idCollection         String?   @map("id_collection")
+  idResultCollection   String?   @map("id_result_collection")
+
+  @@map("save_user_result_hsk")
+}
+
+model SaveUserResultIeltsListening {
+  number               Int       @id @default(autoincrement())
+  userId               BigInt    @map("user_id")
+  idTest               String    @map("id_test")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  typeTest             TestType  @map("type_test")
+  correctPercentage    String    @map("correct_percentage")
+  totalQuestionNumber  Int       @map("total_question_number")
+  correctNumber        Int       @map("correct_number")
+  incorrectNumber      Int       @map("incorrect_number")
+  skipNumber           Int       @map("skip_number")
+  resulttest           Float
+  testname             String
+  useranswer           Json?     @map("useranswer")
+  timedotest           String    @map("timedotest")
+  idResult             String    @map("id_result")
+  permissionLink       String    @map("permission_link")
+  isFinished           Boolean   @default(false) @map("is_finished")
+  isCollection         Boolean   @map("is_collection")
+  finishedAt           DateTime? @map("finished_at")
+  idCollection         String?   @map("id_collection")
+  idResultCollection   String?   @map("id_result_collection")
+
+  @@map("save_user_result_ielts_listening")
+}
+
+model SaveUserResultIeltsReading {
+  number               Int       @id @default(autoincrement())
+  userId               BigInt    @map("user_id")
+  idTest               String    @map("id_test")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  typeTest             TestType  @map("type_test")
+  correctPercentage    String    @map("correct_percentage")
+  totalQuestionNumber  Int       @map("total_question_number")
+  correctNumber        Int       @map("correct_number")
+  incorrectNumber      Int       @map("incorrect_number")
+  skipNumber           Int       @map("skip_number")
+  resulttest           Float
+  testname             String
+  useranswer           Json?     @map("useranswer")
+  timedotest           String    @map("timedotest")
+  idResult             String    @map("id_result")
+  permissionLink       String    @map("permission_link")
+  isFinished           Boolean   @default(false) @map("is_finished")
+  isCollection         Boolean   @map("is_collection")
+  finishedAt           DateTime? @map("finished_at")
+  idCollection         String?   @map("id_collection")
+  idResultCollection   String?   @map("id_result_collection")
+
+  @@map("save_user_result_ielts_reading")
+}
+
+model SaveUserResultIeltsSpeaking {
+  number                Int       @id @default(autoincrement())
+  userId                BigInt    @map("user_id")
+  testname              String
+  createdAt             DateTime  @default(now()) @map("created_at")
+  typeTest              TestType  @map("type_test")
+  idTest                String    @map("id_test")
+  resulttest            String
+  userAnswerAndComment  Json?     @map("user_answer_and_comment")
+  bandDetail            String    @map("band_detail")
+  idResult              String    @map("id_result")
+  logAIResponse         String    @map("logAIResponse")
+  permissionLink        String    @map("permission_link")
+  isFinished            Boolean   @default(false) @map("is_finished")
+  isCollection          Boolean   @map("is_collection")
+  finishedAt            DateTime? @map("finished_at")
+  idCollection          String?   @map("id_collection")
+  idResultCollection    String?   @map("id_result_collection")
+
+  @@map("save_user_result_ielts_speaking")
+}
+
+model SaveUserResultIeltsWriting {
+  number                Int       @id @default(autoincrement())
+  userId                BigInt    @map("user_id")
+  testname              String
+  createdAt             DateTime  @default(now()) @map("created_at")
+  idTest                String    @map("id_test")
+  typeTest              TestType  @map("type_test")
+  resulttest            String
+  bandDetail            String    @map("band_detail")
+  userAnswerAndComment  Json?     @map("user_answer_and_comment")
+  timedotest            String    @map("timedotest")
+  idResult              String    @map("id_result")
+  permissionLink        String    @map("permission_link")
+  isFinished            Boolean   @default(false) @map("is_finished")
+  isCollection          Boolean   @map("is_collection")
+  finishedAt            DateTime? @map("finished_at")
+  idCollection          String?   @map("id_collection")
+  idResultCollection    String?   @map("id_result_collection")
+
+  @@map("save_user_result_ielts_writing")
+}
+
+model SaveUserResultJlpt {
+  number               Int       @id @default(autoincrement())
+  userId               BigInt    @map("user_id")
+  idTest               String    @map("id_test")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  typeTest             TestType  @map("type_test")
+  correctPercentage    String    @map("correct_percentage")
+  totalQuestionNumber  Int       @map("total_question_number")
+  correctNumber        Int       @map("correct_number")
+  incorrectNumber      Int       @map("incorrect_number")
+  skipNumber           Int       @map("skip_number")
+  resulttest           Float
+  testname             String
+  useranswer           Json?     @map("useranswer")
+  timedotest           String    @map("timedotest")
+  idResult             String    @map("id_result")
+  permissionLink       String    @map("permission_link")
+  isFinished           Boolean   @default(false) @map("is_finished")
+  isCollection         Boolean   @map("is_collection")
+  finishedAt           DateTime? @map("finished_at")
+  idCollection         String?   @map("id_collection")
+  idResultCollection   String?   @map("id_result_collection")
+
+  @@map("save_user_result_jlpt")
+}
+
+model SaveUserResultPractice {
+  number       Int      @id @default(autoincrement())
+  testname     String
+  idResult     String   @map("id_result")
+  idTest       String   @map("id_test")
+  testType     String   @map("test_type")
+  accuracyRate Int      @map("accuracy_rate")
+  userId       BigInt   @map("user_id")
+  createdAt    DateTime @map("created_at")
+  finishedAt   DateTime @map("finished_at")
+  isFinished   Boolean  @map("is_finished")
+
+  @@map("save_user_result_practice")
+}
+
+model SaveUserResultTestCollection {
+  number           Int       @id @default(autoincrement())
+  idResult         String    @map("id_result")
+  collectionName   String    @map("collection_name")
+  idCollection     String    @map("id_collection")
+  username         String
+  userId           BigInt    @map("user_id")
+  typeCollection   String    @map("type_collection")
+  result           Int?
+  resultList       Json?     @map("result_list")
+  createdAt        DateTime  @map("created_at")
+  isFinished       Boolean?  @default(false) @map("is_finished")
+  finishedAt       DateTime? @map("finished_at")
+  lastCompletion   String    @map("last_completion")
+
+  @@map("save_user_result_test_collection")
+}
+
+model SaveUserResultThptqg {
+  number               Int       @id @default(autoincrement())
+  userId               BigInt    @map("user_id")
+  idTest               String    @map("id_test")
+  testname             String
+  createdAt            DateTime  @map("created_at")
+  subject              String
+  timedotest           String    @map("timedotest")
+  resulttest           String    @map("resulttest")
+  totalQuestionNumber  Int?      @map("total_question_number")
+  correctNumber        String?   @map("correct_number")
+  incorrectNumber      Int?      @map("incorrect_number")
+  skipNumber           Int?      @map("skip_number")
+  useranswer           Json?     @map("useranswer")
+  idResult             String    @map("id_result")
+  isFinished           Boolean   @default(false) @map("is_finished")
+  isCollection         Boolean   @map("is_collection")
+  finishedAt           DateTime? @map("finished_at")
+  idCollection         String?   @map("id_collection")
+  idResultCollection   String?   @map("id_result_collection")
+  typeTest             TestType  @map("type_test")
+
+  @@map("save_user_result_thptqg")
+}
+
+model SaveUserResultToeicListening {
+  number               Int       @id @default(autoincrement())
+  userId               BigInt    @map("user_id")
+  idTest               String    @map("id_test")
+  testname             String
+  createdAt            DateTime  @map("created_at")
+  typeTest             TestType  @map("type_test")
+  timedotest           String    @map("timedotest")
+  resulttest           Float
+  correctPercentage    Int       @map("correct_percentage")
+  totalQuestionNumber  Int       @map("total_question_number")
+  correctNumber        Int       @map("correct_number")
+  incorrectNumber      Int       @map("incorrect_number")
+  skipNumber           Int       @map("skip_number")
+  useranswer           Json?     @map("useranswer")
+  idResult             String    @map("id_result")
+  permissionLink       String    @map("permission_link")
+  isFinished           Boolean   @default(false) @map("is_finished")
+  isCollection         Boolean   @map("is_collection")
+  finishedAt           DateTime? @map("finished_at")
+  idCollection         String?   @map("id_collection")
+  idResultCollection   String?   @map("id_result_collection")
+
+  @@map("save_user_result_toeic_listening")
+}
+
+model SaveUserResultToeicReading {
+  number               Int       @id @default(autoincrement())
+  userId               BigInt    @map("user_id")
+  idTest               String    @map("id_test")
+  testname             String
+  createdAt            DateTime  @map("created_at")
+  typeTest             TestType  @map("type_test")
+  timedotest           String    @map("timedotest")
+  resulttest           Float
+  correctPercentage    Int       @map("correct_percentage")
+  totalQuestionNumber  Int       @map("total_question_number")
+  correctNumber        Int       @map("correct_number")
+  incorrectNumber      Int       @map("incorrect_number")
+  skipNumber           Int       @map("skip_number")
+  useranswer           Json?     @map("useranswer")
+  idResult             String    @map("id_result")
+  permissionLink       String    @map("permission_link")
+  isFinished           Boolean   @default(false) @map("is_finished")
+  isCollection         Boolean   @map("is_collection")
+  finishedAt           DateTime? @map("finished_at")
+  idCollection         String?   @map("id_collection")
+  idResultCollection   String?   @map("id_result_collection")
+
+  @@map("save_user_result_toeic_reading")
+}
+
+model SaveUserResultToeicSpeaking {
+  number                Int       @id @default(autoincrement())
+  userId                BigInt    @map("user_id")
+  testname              String
+  createdAt             DateTime  @default(now()) @map("created_at")
+  typeTest              TestType  @map("type_test")
+  idTest                String    @map("id_test")
+  resulttest            String
+  userAnswerAndComment  Json?     @map("user_answer_and_comment")
+  bandDetail            String    @map("band_detail")
+  idResult              String    @map("id_result")
+  logAIResponse         String    @map("logAIResponse")
+  permissionLink        String    @map("permission_link")
+  isFinished            Boolean   @default(false) @map("is_finished")
+  isCollection          Boolean   @map("is_collection")
+  finishedAt            DateTime? @map("finished_at")
+  idCollection          String?   @map("id_collection")
+  idResultCollection    String?   @map("id_result_collection")
+  timedotest            String    @map("timedotest")
+
+  @@map("save_user_result_toeic_speaking")
+}
+
+model SaveUserResultToeicWriting {
+  number                Int       @id @default(autoincrement())
+  userId                BigInt    @map("user_id")
+  testname              String
+  createdAt             DateTime  @default(now()) @map("created_at")
+  idTest                String    @map("id_test")
+  typeTest              TestType  @map("type_test")
+  resulttest            String
+  bandDetail            String    @map("band_detail")
+  userAnswerAndComment  Json?     @map("user_answer_and_comment")
+  timedotest            String    @map("timedotest")
+  idResult              String    @map("id_result")
+  permissionLink        String    @map("permission_link")
+  isFinished            Boolean   @default(false) @map("is_finished")
+  isCollection          Boolean   @map("is_collection")
+  finishedAt            DateTime? @map("finished_at")
+  idCollection          String?   @map("id_collection")
+  idResultCollection    String?   @map("id_result_collection")
+
+  @@map("save_user_result_toeic_writing")
+}
+
+model SaveUserResultTopikListening {
+  number               Int       @id @default(autoincrement())
+  userId               BigInt    @map("user_id")
+  idTest               String    @map("id_test")
+  createdAt            DateTime  @map("created_at")
+  typeTest             TestType  @map("type_test")
+  correctPercentage    String    @map("correct_percentage")
+  totalQuestionNumber  Int       @map("total_question_number")
+  correctNumber        Int       @map("correct_number")
+  incorrectNumber      Int       @map("incorrect_number")
+  skipNumber           Int       @map("skip_number")
+  resulttest           Float
+  testname             String
+  useranswer           Json?     @map("useranswer")
+  timedotest           String    @map("timedotest")
+  idResult             String    @map("id_result")
+  permissionLink       String    @map("permission_link")
+  isFinished           Boolean   @default(false) @map("is_finished")
+  isCollection         Boolean   @map("is_collection")
+  finishedAt           DateTime? @map("finished_at")
+  idCollection         String?   @map("id_collection")
+  idResultCollection   String?   @map("id_result_collection")
+
+  @@map("save_user_result_topik_listening")
+}
+
+model SaveUserResultTopikReading {
+  number               Int       @id @default(autoincrement())
+  userId               BigInt    @map("user_id")
+  idTest               String    @map("id_test")
+  createdAt            DateTime  @map("created_at")
+  typeTest             TestType  @map("type_test")
+  correctPercentage    String    @map("correct_percentage")
+  totalQuestionNumber  Int?      @map("total_question_number")
+  correctNumber        Int?      @map("correct_number")
+  incorrectNumber      Int?      @map("incorrect_number")
+  skipNumber           Int?      @map("skip_number")
+  resulttest           Float
+  testname             String
+  useranswer           Json?     @map("useranswer")
+  timedotest           String    @map("timedotest")
+  idResult             String    @map("id_result")
+  permissionLink       String    @map("permission_link")
+  isFinished           Boolean   @default(false) @map("is_finished")
+  isCollection         Boolean   @map("is_collection")
+  finishedAt           DateTime? @map("finished_at")
+  idCollection         String?   @map("id_collection")
+  idResultCollection   String?   @map("id_result_collection")
+
+  @@map("save_user_result_topik_reading")
+}
+
+model SaveUserResultVact {
+  number               Int       @id @default(autoincrement())
+  userId               BigInt    @map("user_id")
+  idTest               String    @map("id_test")
+  testname             String
+  createdAt            DateTime  @map("created_at")
+  timedotest           String    @map("timedotest")
+  resulttest           Float
+  totalQuestionNumber  Int       @map("total_question_number")
+  correctNumber        Int       @map("correct_number")
+  incorrectNumber      Int       @map("incorrect_number")
+  skipNumber           Int       @map("skip_number")
+  useranswer           Json?     @map("useranswer")
+  idResult             String    @map("id_result")
+  isFinished           Boolean   @default(false) @map("is_finished")
+  isCollection         Boolean   @map("is_collection")
+  finishedAt           DateTime? @map("finished_at")
+  idCollection         String?   @map("id_collection")
+  idResultCollection   String?   @map("id_result_collection")
+  typeTest             TestType  @map("type_test")
+
+  @@map("save_user_result_vact")
+}

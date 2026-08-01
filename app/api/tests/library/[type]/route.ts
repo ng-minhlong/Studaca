@@ -82,6 +82,7 @@ function recordToLibraryItem(
   categoryKey: string
 ): LibraryItem {
   const testname = (record.testname as string) ?? "Untitled Test";
+  const idTest = (record.idTest as string) ?? "error_id";
   const time = Number(record.time ?? 0);
   const testTakerCount = Number(record.testTakerCount ?? 0);
   const createdAt =
@@ -89,7 +90,7 @@ function recordToLibraryItem(
     new Date().toISOString();
 
   return {
-    id: String(record.id ?? record.number ?? `${categoryKey}-${testname}`),
+    id: idTest,
     name: testname,
     category: categoryKey,
     durationMinutes: time,
