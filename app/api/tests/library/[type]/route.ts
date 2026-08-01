@@ -6,63 +6,11 @@ import {
   type LibraryItem,
   type LibrarySection,
 } from "@/app/(public)/(tests)/library/_lib/mock-data";
+import { TEST_CATEGORY_MAP } from "@/modules/exam/prisma";
 
 // ---------------------------------------------------------------------------
 // Category → Prisma model mapping for the "test" section
 // ---------------------------------------------------------------------------
-
-/**
- * Maps a TEST_CATEGORIES key to the Prisma model that stores the real test
- * records, plus the field used to filter by sub-type (e.g. "verbal" / "math"
- * for DigitalSat, "reading" / "listening" for HSK / JLPT).
- */
-interface TestModelMapping {
-  /** Prisma client property name (camelCase) */
-  model: string;
-  /** Column that holds the sub-type string (e.g. testType) */
-  typeField: string;
-  /** Value to match in `typeField` — `undefined` means no filter */
-  typeValue?: string;
-}
-
-const TEST_CATEGORY_MAP: Record<string, TestModelMapping> = {
-  "ielts-reading": { model: "ieltsReadingTestList", typeField: "testType" },
-  "ielts-listening": { model: "ieltsListeningTestList", typeField: "testType" },
-  "ielts-speaking": { model: "ieltsSpeakingTestList", typeField: "testType" },
-  "ielts-writing": { model: "ieltsWritingTestList", typeField: "testType" },
-  "digital-sat-verbal": {
-    model: "digitalSatTestList",
-    typeField: "testType",
-    typeValue: "verbal",
-  },
-  "digital-sat-math": {
-    model: "digitalSatTestList",
-    typeField: "testType",
-    typeValue: "math",
-  },
-  "toeic-reading": { model: "toeicReadingTestList", typeField: "testType" },
-  "toeic-listening": { model: "toeicListeningTestList", typeField: "testType" },
-  "hsk-reading": {
-    model: "hskTestList",
-    typeField: "testType",
-    typeValue: "reading",
-  },
-  "hsk-listening": {
-    model: "hskTestList",
-    typeField: "testType",
-    typeValue: "listening",
-  },
-  "jlpt-reading": {
-    model: "jlptTestList",
-    typeField: "testType",
-    typeValue: "reading",
-  },
-  "jlpt-listening": {
-    model: "jlptTestList",
-    typeField: "testType",
-    typeValue: "listening",
-  },
-};
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -1,29 +1,10 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ChevronLeft, Clock, Hash, ListOrdered, ArrowRight } from "lucide-react";
-import { getMockTest } from "@/modules/exam/adapters";
+import { Clock, Hash, ListOrdered } from "lucide-react";
+import { StartTestButton } from "@/components/exam/StartTestButton";
 import { isValidType } from "@/modules/exam/registry";
 
 interface TestStartPageProps {
   params: Promise<{ type: string; id: string }>;
-}
-
-function countQuestions(test: Awaited<ReturnType<typeof getMockTest>>): number {
-  if (!test) return 0;
-  if ("questions" in test) return test.questions.length;
-  if ("parts" in test) {
-    const parts = test.parts as Array<{
-      questions?: unknown[];
-      questionRanges?: Array<{ questions: unknown[] }>;
-    }>;
-    return parts.reduce((sum, p) => {
-      if (p.questions) return sum + p.questions.length;
-      if (p.questionRanges)
-        return sum + p.questionRanges.reduce((s, r) => s + r.questions.length, 0);
-      return sum;
-    }, 0);
-  }
-  return 0;
 }
 
 export default async function TestStartPage({ params }: TestStartPageProps) {
@@ -31,10 +12,19 @@ export default async function TestStartPage({ params }: TestStartPageProps) {
 
   if (!isValidType(type)) notFound();
 
-  const test = getMockTest(type, id);
-  if (!test) notFound();
+  const url = new URL(
+    `/api/tests/test/${type}/${id}`,
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+  );
+  console.log("Debug: type: ", type);
+  console.log("Debug: id: ", id);
+  const res = await fetch(url.toString(), { next: { tags: ["test-start"] } });
+  const data = await res.json();
 
-  const questionCount = countQuestions(test);
+  if (!res.ok || !data?.test) notFound();
+
+  const test = data.test;
+  const questionCount = Number(test.questionCount ?? 0);
   const typeLabel = type.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   return (
@@ -117,13 +107,7 @@ export default async function TestStartPage({ params }: TestStartPageProps) {
           </div>
 
           {/* CTA */}
-          <Link
-            href={`/test/${type}/${id}`}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-foreground px-6 py-3.5 text-sm font-semibold text-background transition-opacity hover:opacity-80"
-          >
-            Start Test
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+          <StartTestButton type={type} id={id} />
         </div>
       </main>
     </div>
