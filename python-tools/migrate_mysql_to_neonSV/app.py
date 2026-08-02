@@ -389,25 +389,34 @@ dst_cols = get_columns(neon_engine, dst_table, schema="public")
 dst_col_names = [c["name"] for c in dst_cols]
 
 st.divider()
-
 # --- STEP 2: match cột ---
 st.subheader("2️⃣ Match các trường dữ liệu (cột)")
+
+# --- Key riêng theo cặp bảng, để đổi bảng là auto-reset toàn bộ widget ---
+current_pair_key = f"{src_table}::{dst_table}"
+
+def _apply_auto_match_and_sync_widgets():
+    """Chạy auto-match, đồng thời ghi đè session_state của từng selectbox
+    vì Streamlit ưu tiên session_state[key] hơn tham số index."""
+    auto_map = auto_match_columns(src_cols, dst_cols)
+    new_rows = [{"src": c["name"], "dst": auto_map.get(c["name"])} for c in src_cols]
+    st.session_state.mapping_rows = new_rows
+    for i, row in enumerate(new_rows):
+        widget_key = f"map_select_{current_pair_key}_{i}"
+        st.session_state[widget_key] = row["dst"] if row["dst"] else "-- Bỏ qua --"
+    st.session_state.mapping_pair_key = current_pair_key
 
 btn_col1, btn_col2 = st.columns([1, 4])
 with btn_col1:
     if st.button("🤖 Tự động match", use_container_width=True):
-        auto_map = auto_match_columns(src_cols, dst_cols)
-        st.session_state.mapping_rows = [
-            {"src": c["name"], "dst": auto_map.get(c["name"])} for c in src_cols
-        ]
+        _apply_auto_match_and_sync_widgets()
+        st.rerun()
 with btn_col2:
     st.caption("Bấm 'Tự động match' để hệ thống tự đề xuất ghép cột theo tên, sau đó bạn có thể chỉnh lại thủ công bên dưới.")
 
-# nếu chưa có mapping (lần đầu vào bảng mới), khởi tạo rỗng theo cột nguồn
-current_src_names = [c["name"] for c in src_cols]
-mapped_src_names = [r["src"] for r in st.session_state.mapping_rows]
-if set(mapped_src_names) != set(current_src_names):
-    st.session_state.mapping_rows = [{"src": c["name"], "dst": None} for c in src_cols]
+# Nếu đổi bảng nguồn/đích (hoặc lần đầu vào) -> tự động match luôn, không cần bấm nút
+if st.session_state.get("mapping_pair_key") != current_pair_key:
+    _apply_auto_match_and_sync_widgets()
 
 src_type_map = {c["name"]: c["type"] for c in src_cols}
 dst_type_map = {c["name"]: c["type"] for c in dst_cols}
@@ -432,12 +441,16 @@ for i, row in enumerate(st.session_state.mapping_rows):
     c2.write("→")
 
     options = ["-- Bỏ qua --"] + dst_col_names
-    current_dst = row["dst"] if row["dst"] in dst_col_names else None
-    default_index = options.index(current_dst) if current_dst else 0
+    widget_key = f"map_select_{current_pair_key}_{i}"
+
+    # Chỉ set giá trị khởi tạo nếu key CHƯA tồn tại (tránh ghi đè lựa chọn tay của user)
+    if widget_key not in st.session_state:
+        current_dst = row["dst"] if row["dst"] in dst_col_names else None
+        st.session_state[widget_key] = current_dst if current_dst else "-- Bỏ qua --"
 
     selected = c3.selectbox(
-        f"map_{i}", options=options, index=default_index,
-        key=f"map_select_{i}", label_visibility="collapsed"
+        f"map_{i}", options=options,
+        key=widget_key, label_visibility="collapsed"
     )
     chosen_dst = None if selected == "-- Bỏ qua --" else selected
     st.session_state.mapping_rows[i]["dst"] = chosen_dst
