@@ -53,6 +53,7 @@ export interface Part {
 
 export interface QuestionRange {
   label: string;
+  description?: string;
   type_question: QuestionType;
   questions: Question[];
 }

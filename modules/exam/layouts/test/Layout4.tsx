@@ -15,16 +15,17 @@ interface Layout4Props {
 }
 
 export function Layout4({ test }: Layout4Props) {
-  const { state, nextPart, prevPart, finish } = useExam();
+  const { state, nextPart, prevPart, setPart, finish } = useExam();
   const { currentPartIndex, timeRemainingSeconds } = state;
 
   // Preserve text per task
   const [texts, setTexts] = useState<Record<string, string>>({});
 
-  const part = test.parts[currentPartIndex];
-  const text = texts[part.id] ?? "";
+  const part = test.parts[currentPartIndex] ?? test.parts[0];
+  const text = part ? texts[part.id] ?? "" : "";
   const wordCount = countWords(text);
-  const meetsMin = wordCount >= part.min_words;
+  const meetsMin = part ? wordCount >= part.min_words : false;
+  const totalParts = test.parts.length;
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
@@ -32,6 +33,9 @@ export function Layout4({ test }: Layout4Props) {
       <header className="flex shrink-0 items-center justify-between border-b border-border bg-background px-6 py-3">
         <div>
           <h1 className="text-sm font-semibold">{test.title}</h1>
+          <p className="text-xs text-muted-foreground">
+            Task {currentPartIndex + 1} of {totalParts}
+          </p>
         </div>
         <div className="flex items-center gap-4">
           <ExamTimer seconds={timeRemainingSeconds} />
@@ -43,15 +47,11 @@ export function Layout4({ test }: Layout4Props) {
       </header>
 
       {/* Task tabs */}
-      <div className="flex shrink-0 gap-1 border-b border-border bg-muted/30 px-6 py-2">
+      <div className="flex shrink-0 gap-1 border-b border-border bg-muted/30 px-6 py-2 overflow-x-auto">
         {test.parts.map((p, idx) => (
           <button
             key={p.id}
-            onClick={() => {
-              const diff = idx - currentPartIndex;
-              if (diff < 0) prevPart();
-              else if (diff > 0) nextPart();
-            }}
+            onClick={() => setPart(idx)}
             className={cn(
               "rounded-md px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors",
               idx === currentPartIndex
@@ -70,13 +70,18 @@ export function Layout4({ test }: Layout4Props) {
         <div className="flex w-1/2 flex-col overflow-y-auto border-r border-border">
           <div className="flex-1 space-y-4 px-8 py-6">
             <div className="flex items-center gap-2">
-              <Badge variant="secondary">{part.task_label}</Badge>
+              <Badge variant="secondary">{part?.task_label}</Badge>
+              <Badge variant="outline">{part?.title}</Badge>
             </div>
-            <p className="text-sm font-medium leading-relaxed text-foreground">
-              {part.question}
-            </p>
-            <p className="text-xs text-muted-foreground leading-relaxed">{part.instructions}</p>
-            {part.image_url && (
+            <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+              <p className="text-sm font-medium leading-relaxed text-foreground">
+                {part?.question}
+              </p>
+              <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
+                {part?.instructions}
+              </p>
+            </div>
+            {part?.image_url && (
               <div className="overflow-hidden rounded-xl border border-border bg-muted/30">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -109,15 +114,15 @@ export function Layout4({ test }: Layout4Props) {
               >
                 {wordCount} words
               </span>
-              <span className="text-xs text-muted-foreground">/ min {part.min_words}</span>
+              <span className="text-xs text-muted-foreground">/ min {part?.min_words ?? 0}</span>
             </div>
           </div>
           <textarea
             value={text}
             onChange={(e) =>
-              setTexts((prev) => ({ ...prev, [part.id]: e.target.value }))
+              setTexts((prev) => ({ ...prev, [part?.id ?? "default"]: e.target.value }))
             }
-            placeholder={`Write your ${part.task_label} response here…`}
+            placeholder={`Write your ${part?.task_label ?? "task"} response here…`}
             className="flex-1 resize-none bg-background px-5 py-4 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none"
             spellCheck
           />

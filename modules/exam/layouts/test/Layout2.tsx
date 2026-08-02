@@ -98,6 +98,9 @@ export function Layout2({ test }: Layout2Props) {
             <div key={rIdx} className="space-y-4">
               <div className="rounded-lg bg-muted/40 px-4 py-2.5">
                 <p className="text-xs font-semibold text-muted-foreground">{range.label}</p>
+                {range.description ? (
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/80">{range.description}</p>
+                ) : null}
               </div>
               {range.questions.map((q) => (
                 <div key={q.id} className="rounded-xl border border-border bg-card p-4 shadow-sm">

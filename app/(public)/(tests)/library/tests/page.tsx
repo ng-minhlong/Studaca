@@ -22,7 +22,7 @@ export default async function TestLibraryPage({
   return (
     <>
       <ItemBrowser
-        basePath="/library/test"
+        basePath="/library/tests"
         categories={config.categories}
         activeCategory={activeCategory}
         items={items}

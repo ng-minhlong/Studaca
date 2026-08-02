@@ -1,4 +1,7 @@
 -- CreateEnum
+CREATE TYPE "CreditTransactionType" AS ENUM ('PURCHASE', 'BONUS', 'REFUND', 'ADMIN_ADD', 'ADMIN_REMOVE', 'AI_CHAT', 'AI_EXPLAIN', 'AI_GRADING', 'OCR', 'EXPORT', 'COURSE_PURCHASE');
+
+-- CreateEnum
 CREATE TYPE "CourseStatus" AS ENUM ('Draft', 'Published', 'Archived');
 
 -- CreateEnum
@@ -37,6 +40,9 @@ CREATE TYPE "HskLevel" AS ENUM ('hsk1', 'hsk2', 'hsk3', '');
 -- CreateEnum
 CREATE TYPE "HskTestPartType" AS ENUM ('Writing', 'Reading', 'Listening');
 
+-- CreateEnum
+CREATE TYPE "TestType" AS ENUM ('full-test', 'mini-test', 'practice');
+
 -- CreateTable
 CREATE TABLE "Test" (
     "id" TEXT NOT NULL,
@@ -61,6 +67,32 @@ CREATE TABLE "user" (
     "banExpires" TIMESTAMP(3),
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserCredit" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "balance" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "UserCredit_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UserCreditUsage" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "type" "CreditTransactionType" NOT NULL,
+    "amount" INTEGER NOT NULL,
+    "balanceAfter" INTEGER NOT NULL,
+    "description" TEXT,
+    "referenceId" TEXT,
+    "metadata" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "UserCreditUsage_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -482,7 +514,7 @@ CREATE TABLE "jlpt_test_list" (
 CREATE TABLE "jlpt_test_part_list" (
     "number" SERIAL NOT NULL,
     "id_test" TEXT NOT NULL,
-    "test_type" "JlptTestPartType" NOT NULL,
+    "test_category" "JlptTestPartType" NOT NULL,
     "test_content" JSONB NOT NULL,
     "correct_answer" JSONB NOT NULL,
     "level" "JlptLevel",
@@ -750,7 +782,7 @@ CREATE TABLE "hsk_test_list" (
 CREATE TABLE "hsk_test_part_list" (
     "number" SERIAL NOT NULL,
     "id_test" TEXT NOT NULL,
-    "test_type" "HskTestPartType" NOT NULL,
+    "test_category" "HskTestPartType" NOT NULL,
     "test_content" JSONB NOT NULL,
     "audio_context" TEXT NOT NULL,
     "correct_answer" JSONB NOT NULL,
@@ -790,11 +822,470 @@ CREATE TABLE "test_collection" (
     CONSTRAINT "test_collection_pkey" PRIMARY KEY ("number")
 );
 
+-- CreateTable
+CREATE TABLE "save_user_result_digital_sat" (
+    "number" SERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "testname" TEXT NOT NULL,
+    "type_test" "TestType" NOT NULL,
+    "correct_percentage" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL,
+    "id_test" TEXT NOT NULL,
+    "resulttest" TEXT NOT NULL,
+    "timedotest" TEXT NOT NULL,
+    "total_question_number" INTEGER,
+    "correct_number" INTEGER,
+    "incorrect_number" INTEGER,
+    "skip_number" INTEGER,
+    "useranswer" JSONB NOT NULL,
+    "save_specific_time" TEXT NOT NULL,
+    "id_result" TEXT NOT NULL,
+    "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_collection" BOOLEAN NOT NULL,
+    "finished_at" TIMESTAMP(3),
+    "id_collection" TEXT,
+    "id_result_collection" TEXT,
+
+    CONSTRAINT "save_user_result_digital_sat_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_hsa" (
+    "number" SERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "id_test" TEXT NOT NULL,
+    "testname" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL,
+    "timedotest" TEXT NOT NULL,
+    "resulttest" DOUBLE PRECISION NOT NULL,
+    "total_question_number" INTEGER,
+    "correct_number" INTEGER,
+    "incorrect_number" INTEGER,
+    "skip_number" INTEGER,
+    "useranswer" JSONB,
+    "id_result" TEXT NOT NULL,
+    "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_collection" BOOLEAN NOT NULL,
+    "finished_at" TIMESTAMP(3),
+    "id_collection" TEXT,
+    "id_result_collection" TEXT,
+    "type_test" "TestType" NOT NULL,
+
+    CONSTRAINT "save_user_result_hsa_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_hsk" (
+    "number" SERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "id_test" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "type_test" "TestType" NOT NULL,
+    "correct_percentage" TEXT NOT NULL,
+    "total_question_number" INTEGER NOT NULL,
+    "correct_number" INTEGER NOT NULL,
+    "incorrect_number" INTEGER NOT NULL,
+    "skip_number" INTEGER NOT NULL,
+    "resulttest" DOUBLE PRECISION NOT NULL,
+    "testname" TEXT NOT NULL,
+    "useranswer" JSONB,
+    "timedotest" TEXT NOT NULL,
+    "id_result" TEXT NOT NULL,
+    "permission_link" TEXT NOT NULL,
+    "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_collection" BOOLEAN NOT NULL,
+    "finished_at" TIMESTAMP(3),
+    "id_collection" TEXT,
+    "id_result_collection" TEXT,
+
+    CONSTRAINT "save_user_result_hsk_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_ielts_listening" (
+    "number" SERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "id_test" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "type_test" "TestType" NOT NULL,
+    "correct_percentage" TEXT NOT NULL,
+    "total_question_number" INTEGER NOT NULL,
+    "correct_number" INTEGER NOT NULL,
+    "incorrect_number" INTEGER NOT NULL,
+    "skip_number" INTEGER NOT NULL,
+    "resulttest" DOUBLE PRECISION NOT NULL,
+    "testname" TEXT NOT NULL,
+    "useranswer" JSONB,
+    "timedotest" TEXT NOT NULL,
+    "id_result" TEXT NOT NULL,
+    "permission_link" TEXT NOT NULL,
+    "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_collection" BOOLEAN NOT NULL,
+    "finished_at" TIMESTAMP(3),
+    "id_collection" TEXT,
+    "id_result_collection" TEXT,
+
+    CONSTRAINT "save_user_result_ielts_listening_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_ielts_reading" (
+    "number" SERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "id_test" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "type_test" "TestType" NOT NULL,
+    "correct_percentage" TEXT NOT NULL,
+    "total_question_number" INTEGER NOT NULL,
+    "correct_number" INTEGER NOT NULL,
+    "incorrect_number" INTEGER NOT NULL,
+    "skip_number" INTEGER NOT NULL,
+    "resulttest" DOUBLE PRECISION NOT NULL,
+    "testname" TEXT NOT NULL,
+    "useranswer" JSONB,
+    "timedotest" TEXT NOT NULL,
+    "id_result" TEXT NOT NULL,
+    "permission_link" TEXT NOT NULL,
+    "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_collection" BOOLEAN NOT NULL,
+    "finished_at" TIMESTAMP(3),
+    "id_collection" TEXT,
+    "id_result_collection" TEXT,
+
+    CONSTRAINT "save_user_result_ielts_reading_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_ielts_speaking" (
+    "number" SERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "testname" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "type_test" "TestType" NOT NULL,
+    "id_test" TEXT NOT NULL,
+    "resulttest" TEXT NOT NULL,
+    "user_answer_and_comment" JSONB,
+    "band_detail" TEXT NOT NULL,
+    "id_result" TEXT NOT NULL,
+    "logAIResponse" TEXT NOT NULL,
+    "permission_link" TEXT NOT NULL,
+    "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_collection" BOOLEAN NOT NULL,
+    "finished_at" TIMESTAMP(3),
+    "id_collection" TEXT,
+    "id_result_collection" TEXT,
+
+    CONSTRAINT "save_user_result_ielts_speaking_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_ielts_writing" (
+    "number" SERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "testname" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "id_test" TEXT NOT NULL,
+    "type_test" "TestType" NOT NULL,
+    "resulttest" TEXT NOT NULL,
+    "band_detail" TEXT NOT NULL,
+    "user_answer_and_comment" JSONB,
+    "timedotest" TEXT NOT NULL,
+    "id_result" TEXT NOT NULL,
+    "permission_link" TEXT NOT NULL,
+    "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_collection" BOOLEAN NOT NULL,
+    "finished_at" TIMESTAMP(3),
+    "id_collection" TEXT,
+    "id_result_collection" TEXT,
+
+    CONSTRAINT "save_user_result_ielts_writing_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_jlpt" (
+    "number" SERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "id_test" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "type_test" "TestType" NOT NULL,
+    "correct_percentage" TEXT NOT NULL,
+    "total_question_number" INTEGER NOT NULL,
+    "correct_number" INTEGER NOT NULL,
+    "incorrect_number" INTEGER NOT NULL,
+    "skip_number" INTEGER NOT NULL,
+    "resulttest" DOUBLE PRECISION NOT NULL,
+    "testname" TEXT NOT NULL,
+    "useranswer" JSONB,
+    "timedotest" TEXT NOT NULL,
+    "id_result" TEXT NOT NULL,
+    "permission_link" TEXT NOT NULL,
+    "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_collection" BOOLEAN NOT NULL,
+    "finished_at" TIMESTAMP(3),
+    "id_collection" TEXT,
+    "id_result_collection" TEXT,
+
+    CONSTRAINT "save_user_result_jlpt_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_practice" (
+    "number" SERIAL NOT NULL,
+    "testname" TEXT NOT NULL,
+    "id_result" TEXT NOT NULL,
+    "id_test" TEXT NOT NULL,
+    "test_type" TEXT NOT NULL,
+    "accuracy_rate" INTEGER NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL,
+    "finished_at" TIMESTAMP(3) NOT NULL,
+    "is_finished" BOOLEAN NOT NULL,
+
+    CONSTRAINT "save_user_result_practice_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_test_collection" (
+    "number" SERIAL NOT NULL,
+    "id_result" TEXT NOT NULL,
+    "collection_name" TEXT NOT NULL,
+    "id_collection" TEXT NOT NULL,
+    "username" TEXT NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "type_collection" TEXT NOT NULL,
+    "result" INTEGER,
+    "result_list" JSONB,
+    "created_at" TIMESTAMP(3) NOT NULL,
+    "is_finished" BOOLEAN DEFAULT false,
+    "finished_at" TIMESTAMP(3),
+    "last_completion" TEXT NOT NULL,
+
+    CONSTRAINT "save_user_result_test_collection_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_thptqg" (
+    "number" SERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "id_test" TEXT NOT NULL,
+    "testname" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL,
+    "subject" TEXT NOT NULL,
+    "timedotest" TEXT NOT NULL,
+    "resulttest" TEXT NOT NULL,
+    "total_question_number" INTEGER,
+    "correct_number" TEXT,
+    "incorrect_number" INTEGER,
+    "skip_number" INTEGER,
+    "useranswer" JSONB,
+    "id_result" TEXT NOT NULL,
+    "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_collection" BOOLEAN NOT NULL,
+    "finished_at" TIMESTAMP(3),
+    "id_collection" TEXT,
+    "id_result_collection" TEXT,
+    "type_test" "TestType" NOT NULL,
+
+    CONSTRAINT "save_user_result_thptqg_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_toeic_listening" (
+    "number" SERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "id_test" TEXT NOT NULL,
+    "testname" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL,
+    "type_test" "TestType" NOT NULL,
+    "timedotest" TEXT NOT NULL,
+    "resulttest" DOUBLE PRECISION NOT NULL,
+    "correct_percentage" INTEGER NOT NULL,
+    "total_question_number" INTEGER NOT NULL,
+    "correct_number" INTEGER NOT NULL,
+    "incorrect_number" INTEGER NOT NULL,
+    "skip_number" INTEGER NOT NULL,
+    "useranswer" JSONB,
+    "id_result" TEXT NOT NULL,
+    "permission_link" TEXT NOT NULL,
+    "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_collection" BOOLEAN NOT NULL,
+    "finished_at" TIMESTAMP(3),
+    "id_collection" TEXT,
+    "id_result_collection" TEXT,
+
+    CONSTRAINT "save_user_result_toeic_listening_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_toeic_reading" (
+    "number" SERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "id_test" TEXT NOT NULL,
+    "testname" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL,
+    "type_test" "TestType" NOT NULL,
+    "timedotest" TEXT NOT NULL,
+    "resulttest" DOUBLE PRECISION NOT NULL,
+    "correct_percentage" INTEGER NOT NULL,
+    "total_question_number" INTEGER NOT NULL,
+    "correct_number" INTEGER NOT NULL,
+    "incorrect_number" INTEGER NOT NULL,
+    "skip_number" INTEGER NOT NULL,
+    "useranswer" JSONB,
+    "id_result" TEXT NOT NULL,
+    "permission_link" TEXT NOT NULL,
+    "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_collection" BOOLEAN NOT NULL,
+    "finished_at" TIMESTAMP(3),
+    "id_collection" TEXT,
+    "id_result_collection" TEXT,
+
+    CONSTRAINT "save_user_result_toeic_reading_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_toeic_speaking" (
+    "number" SERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "testname" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "type_test" "TestType" NOT NULL,
+    "id_test" TEXT NOT NULL,
+    "resulttest" TEXT NOT NULL,
+    "user_answer_and_comment" JSONB,
+    "band_detail" TEXT NOT NULL,
+    "id_result" TEXT NOT NULL,
+    "logAIResponse" TEXT NOT NULL,
+    "permission_link" TEXT NOT NULL,
+    "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_collection" BOOLEAN NOT NULL,
+    "finished_at" TIMESTAMP(3),
+    "id_collection" TEXT,
+    "id_result_collection" TEXT,
+    "timedotest" TEXT NOT NULL,
+
+    CONSTRAINT "save_user_result_toeic_speaking_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_toeic_writing" (
+    "number" SERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "testname" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "id_test" TEXT NOT NULL,
+    "type_test" "TestType" NOT NULL,
+    "resulttest" TEXT NOT NULL,
+    "band_detail" TEXT NOT NULL,
+    "user_answer_and_comment" JSONB,
+    "timedotest" TEXT NOT NULL,
+    "id_result" TEXT NOT NULL,
+    "permission_link" TEXT NOT NULL,
+    "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_collection" BOOLEAN NOT NULL,
+    "finished_at" TIMESTAMP(3),
+    "id_collection" TEXT,
+    "id_result_collection" TEXT,
+
+    CONSTRAINT "save_user_result_toeic_writing_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_topik_listening" (
+    "number" SERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "id_test" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL,
+    "type_test" "TestType" NOT NULL,
+    "correct_percentage" TEXT NOT NULL,
+    "total_question_number" INTEGER NOT NULL,
+    "correct_number" INTEGER NOT NULL,
+    "incorrect_number" INTEGER NOT NULL,
+    "skip_number" INTEGER NOT NULL,
+    "resulttest" DOUBLE PRECISION NOT NULL,
+    "testname" TEXT NOT NULL,
+    "useranswer" JSONB,
+    "timedotest" TEXT NOT NULL,
+    "id_result" TEXT NOT NULL,
+    "permission_link" TEXT NOT NULL,
+    "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_collection" BOOLEAN NOT NULL,
+    "finished_at" TIMESTAMP(3),
+    "id_collection" TEXT,
+    "id_result_collection" TEXT,
+
+    CONSTRAINT "save_user_result_topik_listening_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_topik_reading" (
+    "number" SERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "id_test" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL,
+    "type_test" "TestType" NOT NULL,
+    "correct_percentage" TEXT NOT NULL,
+    "total_question_number" INTEGER,
+    "correct_number" INTEGER,
+    "incorrect_number" INTEGER,
+    "skip_number" INTEGER,
+    "resulttest" DOUBLE PRECISION NOT NULL,
+    "testname" TEXT NOT NULL,
+    "useranswer" JSONB,
+    "timedotest" TEXT NOT NULL,
+    "id_result" TEXT NOT NULL,
+    "permission_link" TEXT NOT NULL,
+    "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_collection" BOOLEAN NOT NULL,
+    "finished_at" TIMESTAMP(3),
+    "id_collection" TEXT,
+    "id_result_collection" TEXT,
+
+    CONSTRAINT "save_user_result_topik_reading_pkey" PRIMARY KEY ("number")
+);
+
+-- CreateTable
+CREATE TABLE "save_user_result_vact" (
+    "number" SERIAL NOT NULL,
+    "user_id" BIGINT NOT NULL,
+    "id_test" TEXT NOT NULL,
+    "testname" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL,
+    "timedotest" TEXT NOT NULL,
+    "resulttest" DOUBLE PRECISION NOT NULL,
+    "total_question_number" INTEGER NOT NULL,
+    "correct_number" INTEGER NOT NULL,
+    "incorrect_number" INTEGER NOT NULL,
+    "skip_number" INTEGER NOT NULL,
+    "useranswer" JSONB,
+    "id_result" TEXT NOT NULL,
+    "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_collection" BOOLEAN NOT NULL,
+    "finished_at" TIMESTAMP(3),
+    "id_collection" TEXT,
+    "id_result_collection" TEXT,
+    "type_test" "TestType" NOT NULL,
+
+    CONSTRAINT "save_user_result_vact_pkey" PRIMARY KEY ("number")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "user_stripeCustomerId_key" ON "user"("stripeCustomerId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "UserCredit_userId_key" ON "UserCredit"("userId");
+
+-- CreateIndex
+CREATE INDEX "UserCreditUsage_userId_idx" ON "UserCreditUsage"("userId");
+
+-- CreateIndex
+CREATE INDEX "UserCreditUsage_type_idx" ON "UserCreditUsage"("type");
+
+-- CreateIndex
+CREATE INDEX "UserCreditUsage_createdAt_idx" ON "UserCreditUsage"("createdAt");
 
 -- CreateIndex
 CREATE INDEX "session_userId_idx" ON "session"("userId");
@@ -813,6 +1304,12 @@ CREATE UNIQUE INDEX "Course_slug_key" ON "Course"("slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Enrollment_userId_courseId_key" ON "Enrollment"("userId", "courseId");
+
+-- AddForeignKey
+ALTER TABLE "UserCredit" ADD CONSTRAINT "UserCredit_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserCreditUsage" ADD CONSTRAINT "UserCreditUsage_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;

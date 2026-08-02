@@ -606,7 +606,7 @@ model JlptTestList {
 model JlptTestPartList {
   number               Int              @id @default(autoincrement())
   idTest               String           @map("id_test")
-  testType             JlptTestPartType @map("test_type")
+  testCategory             JlptTestPartType @map("test_category")
   testContent          Json             @map("test_content")
   correctAnswer        Json             @map("correct_answer")
   level                JlptLevel?
@@ -860,7 +860,7 @@ model HskTestList {
 model HskTestPartList {
   number               Int             @id @default(autoincrement())
   idTest               String          @map("id_test")
-  testType             HskTestPartType @map("test_type")
+  testCategory         HskTestPartType @map("test_category")
   testContent          Json            @map("test_content")
   audioContext         String          @map("audio_context")
   correctAnswer        Json            @map("correct_answer")

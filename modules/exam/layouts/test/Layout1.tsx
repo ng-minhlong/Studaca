@@ -93,6 +93,9 @@ export function Layout1({ test }: Layout1Props) {
               <div key={rIdx} className="space-y-4">
                 <div className="rounded-lg bg-muted/40 px-4 py-2.5">
                   <p className="text-xs font-semibold text-muted-foreground">{range.label}</p>
+                  {range.description ? (
+                    <p className="mt-2 text-sm leading-relaxed text-foreground/80">{range.description}</p>
+                  ) : null}
                 </div>
                 <div className="space-y-4">
                   {range.questions.map((q) => (

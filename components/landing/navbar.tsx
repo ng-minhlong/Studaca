@@ -18,8 +18,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSignOut } from "@/hooks/use-signout";
 
 const links = [
-  { label: "Features", href: "#features" },
-  { label: "Question Bank", href: "#question-bank" },
+  { label: "Home", href: "/" },
+  { label: "Test Library", href: "/library/tests" },
   { label: "AI Learning", href: "#ai-learning" },
   { label: "Courses", href: "#courses" },
   { label: "Coding", href: "#coding" },

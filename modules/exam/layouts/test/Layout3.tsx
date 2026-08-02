@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   Mic,
   MicOff,
@@ -25,11 +25,12 @@ interface Layout3Props {
 type RecordState = "idle" | "recording" | "recorded";
 
 export function Layout3({ test }: Layout3Props) {
-  const { state, nextPart, prevPart, nextQuestion, prevQuestion, finish } = useExam();
+  const { state, nextPart, prevPart, nextQuestion, prevQuestion, setQuestion, finish } = useExam();
   const { currentPartIndex, currentQuestionIndex, timeRemainingSeconds } = state;
 
   const part = test.parts[currentPartIndex];
-  const question = part?.questions[currentQuestionIndex];
+  const totalQuestionsInPart = part?.questions.length ?? 0;
+  const question = part?.questions[currentQuestionIndex] ?? part?.questions[0];
   const totalParts = test.parts.length;
 
   // Per-question recording state: questionId -> blob URL
@@ -75,22 +76,23 @@ export function Layout3({ test }: Layout3Props) {
   };
 
   const handleNext = () => {
-    if (currentQuestionIndex < part.questions.length - 1) nextQuestion();
+    if (currentQuestionIndex < totalQuestionsInPart - 1) nextQuestion();
     else if (currentPartIndex < totalParts - 1) nextPart();
   };
 
   const isFirst = currentPartIndex === 0 && currentQuestionIndex === 0;
   const isLast =
     currentPartIndex === totalParts - 1 &&
-    currentQuestionIndex === part.questions.length - 1;
+    currentQuestionIndex === totalQuestionsInPart - 1;
 
-  // Reset record state when question changes
-  const prevQRef = useRef<string | undefined>(undefined);
-  if (question && prevQRef.current !== question.id) {
-    prevQRef.current = question.id;
-    if (recordState === "recording") stopRecording();
-    setRecordState(recordings[question?.id ?? ""] ? "recorded" : "idle");
-  }
+  useEffect(() => {
+    if (!question) return;
+    if (recordState === "recording") {
+      stopRecording();
+      return;
+    }
+    setRecordState(recordings[question.id] ? "recorded" : "idle");
+  }, [question?.id, recordings, recordState, stopRecording]);
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
@@ -141,9 +143,12 @@ export function Layout3({ test }: Layout3Props) {
 
             {/* Question card */}
             <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
-              <div className="mb-4 flex items-center gap-2">
+              <div className="mb-4 flex flex-wrap items-center gap-2">
                 <Badge variant="secondary" className="text-xs">
                   {part.title}
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                  Question {question.number}
                 </Badge>
                 {question.prep_time && question.prep_time > 0 && (
                   <Badge variant="outline" className="gap-1 text-xs">
@@ -163,6 +168,25 @@ export function Layout3({ test }: Layout3Props) {
                 </p>
               )}
             </div>
+
+            {part.questions.length > 1 && (
+              <div className="flex flex-wrap gap-2">
+                {part.questions.map((item, idx) => (
+                  <button
+                    key={item.id}
+                    onClick={() => setQuestion(idx)}
+                    className={cn(
+                      "rounded-full border px-3 py-1.5 text-sm transition-colors",
+                      idx === currentQuestionIndex
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-background text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {item.number}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Recording controls */}
             <div className="flex flex-col items-center gap-4">
