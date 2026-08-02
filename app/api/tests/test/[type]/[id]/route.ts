@@ -13,6 +13,7 @@ export async function GET(
     return NextResponse.json({ error: "Invalid test type" }, { status: 400 });
   }
 
+
   const mapping = EXAM_TYPE_MODEL_MAP[type];
   if (!mapping) {
     return NextResponse.json({ error: "Unsupported test type" }, { status: 400 });

@@ -20,8 +20,9 @@ export default async function TestStartPage({ params }: TestStartPageProps) {
   console.log("Debug: id: ", id);
   const res = await fetch(url.toString(), { next: { tags: ["test-start"] } });
   const data = await res.json();
-
+  console.log("Data: ", data)
   if (!res.ok || !data?.test) notFound();
+
 
   const test = data.test;
   const questionCount = Number(test.questionCount ?? 0);

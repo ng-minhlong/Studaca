@@ -13,7 +13,9 @@ export type ExamType =
   | "ielts-listening"
   | "ielts-speaking"
   | "ielts-writing"
-  | "digital-sat";
+  | "digital-sat-verbal"
+  | "digital-sat-math"
+
 
 export type LayoutKey =
   | "layout_0"

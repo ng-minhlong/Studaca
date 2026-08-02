@@ -13,7 +13,8 @@ export const VALID_TYPES: ExamType[] = [
   "ielts-listening",
   "ielts-speaking",
   "ielts-writing",
-  "digital-sat",
+  "digital-sat-verbal",
+  "digital-sat-math"
 ];
 
 export const TYPE_TO_LAYOUT: Record<ExamType, LayoutKey> = {
@@ -29,7 +30,8 @@ export const TYPE_TO_LAYOUT: Record<ExamType, LayoutKey> = {
   "ielts-listening": "layout_2",
   "ielts-speaking": "layout_3",
   "ielts-writing": "layout_4",
-  "digital-sat": "layout_5",
+  "digital-sat-verbal": "layout_5",
+  "digital-sat-math": "layout_5",
 };
 
 export function isValidType(type: string): type is ExamType {

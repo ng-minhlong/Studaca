@@ -65,7 +65,8 @@ export const EXAM_TYPE_MODEL_MAP: Record<ExamType, ExamTypeModelMapping> = {
   "ielts-listening": { model: "ieltsListeningTestList", saveModel: "saveUserResultIeltsListening" },
   "ielts-speaking": { model: "ieltsSpeakingTestList", saveModel: "saveUserResultIeltsSpeaking" },
   "ielts-writing": { model: "ieltsWritingTestList", saveModel: "saveUserResultIeltsWriting" },
-  "digital-sat": { model: "digitalSatTestList", saveModel: "saveUserResultDigitalSat" },
+  "digital-sat-math": { model: "digitalSatTestList", saveModel: "saveUserResultDigitalSat" },
+  "digital-sat-verbal": { model: "digitalSatTestList", saveModel: "saveUserResultDigitalSat" },
 };
 
 const DEFAULT_RESULT_PAYLOADS: Record<ExamType, Record<string, unknown>> = {
@@ -189,7 +190,15 @@ const DEFAULT_RESULT_PAYLOADS: Record<ExamType, Record<string, unknown>> = {
     timedotest: "",
     permissionLink: "",
   },
-  "digital-sat": {
+  "digital-sat-math": {
+    typeTest: "practice",
+    correctPercentage: "",
+    resulttest: "",
+    timedotest: "",
+    saveSpecificTime: "",
+    useranswer: [],
+  },
+  "digital-sat-verbal": {
     typeTest: "practice",
     correctPercentage: "",
     resulttest: "",
