@@ -1,12 +1,25 @@
+/**Use for digital sat - both verbal and math */
+
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Bookmark, BookmarkCheck, Send } from "lucide-react";
+import {
+  Bookmark,
+  BookmarkCheck,
+  Calculator,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Circle,
+  Send,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useExam } from "../../engine";
 import { ExamTimer } from "../../components/ExamTimer";
+import { authClient } from "@/lib/auth-client";
 import type { Layout5Test, SatQuestion } from "../../types";
 import { cn } from "@/lib/utils";
 
@@ -53,13 +66,17 @@ function AnswerOption({
 export function Layout5({ test }: Layout5Props) {
   const { state, setAnswer, toggleBookmark, finish } = useExam();
   const { answers, bookmarks, timeRemainingSeconds } = state;
+  const { data: session } = authClient.useSession();
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showNavigator, setShowNavigator] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
 
   const totalQuestions = test.questions.length;
   const question: SatQuestion = test.questions[currentIndex];
   const currentAnswer = (answers[question.id] as string) ?? "";
   const isBookmarked = bookmarks.has(question.id);
+  const userName = session?.user?.name || session?.user?.email || "Student";
 
   const answeredCount = test.questions.filter((q) => answers[q.id] != null).length;
 
@@ -67,197 +84,250 @@ export function Layout5({ test }: Layout5Props) {
     if (idx >= 0 && idx < totalQuestions) setCurrentIndex(idx);
   };
 
-  // Group questions by module for the sidebar
-  const modules = Array.from(new Set(test.questions.map((q) => q.module ?? "Module 1")));
-
   return (
     <div className="mt-16 flex h-[calc(100vh-4rem)] flex-col overflow-hidden bg-background">
-      {/* Header */}
-      <header className="flex shrink-0 items-center justify-between border-b border-border bg-background px-6 py-3">
-        <div className="flex items-center gap-3">
-          <h1 className="text-sm font-semibold">{test.title}</h1>
-          {question.module && (
-            <Badge variant="outline" className="text-xs">
-              {question.module}
-            </Badge>
-          )}
-          {question.domain && (
-            <Badge variant="secondary" className="text-xs">
-              {question.domain}
-            </Badge>
-          )}
+      <header className="shrink-0 border-b border-border bg-background">
+        <div className="flex items-center justify-between px-6 py-3">
+          <div className="min-w-0">
+            <h1 className="truncate text-sm font-semibold">{test.title}</h1>
+            <p className="text-xs text-muted-foreground">Digital SAT</p>
+          </div>
+
+          <div className="flex flex-1 justify-center">
+            <ExamTimer seconds={timeRemainingSeconds} />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setShowCalculator(true)}
+              className="h-9 w-9"
+              aria-label="Open calculator"
+            >
+              <Calculator className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {answeredCount}/{totalQuestions} answered
-          </span>
-          <ExamTimer seconds={timeRemainingSeconds} />
-          <Button size="sm" onClick={finish} variant="outline" className="gap-1.5">
-            <Send className="h-3.5 w-3.5" />
-            Submit
-          </Button>
-        </div>
+        <hr className="border-border" />
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar: question grid */}
-        <aside className="flex w-64 shrink-0 flex-col border-r border-border bg-background">
-          <div className="border-b border-border px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Questions
-            </p>
+        <div className="grid h-full w-full grid-cols-1 lg:grid-cols-2">
+          <div className="border-r border-border bg-muted/10">
+            <ScrollArea className="h-full">
+              <div className="mx-auto max-w-2xl px-6 py-8 lg:px-8">
+                {question.passage && (
+                  <div className="mb-6 rounded-2xl border border-border bg-background/70 p-6 text-sm leading-relaxed text-foreground/80 shadow-sm">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                      Passage
+                    </p>
+                    <div dangerouslySetInnerHTML={{ __html: question.passage }} />
+                  </div>
+                )}
+
+                <div className="rounded-2xl border border-border bg-background p-6 shadow-sm">
+                  <div className="mb-4 flex flex-wrap items-center gap-2">
+                    {question.module && (
+                      <Badge variant="outline" className="text-xs">
+                        {question.module}
+                      </Badge>
+                    )}
+                    {question.domain && (
+                      <Badge variant="secondary" className="text-xs">
+                        {question.domain}
+                      </Badge>
+                    )}
+                    <Badge variant="secondary" className="text-xs">
+                      Question {question.number}
+                    </Badge>
+                  </div>
+                  <div
+                    className="text-sm leading-relaxed text-foreground"
+                    dangerouslySetInnerHTML={{ __html: question.question }}
+                  />
+                </div>
+              </div>
+            </ScrollArea>
           </div>
-          <ScrollArea className="flex-1 px-4 py-4">
-            {modules.map((mod) => {
-              const modQs = test.questions.filter(
-                (q) => (q.module ?? "Module 1") === mod
-              );
-              return (
-                <div key={mod} className="mb-4">
-                  <p className="mb-2 text-xs font-medium text-muted-foreground">{mod}</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {modQs.map((q) => {
-                      const idx = test.questions.indexOf(q);
+
+          <div className="flex flex-col bg-background">
+            <ScrollArea className="flex-1">
+              <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 py-8 lg:px-8">
+                <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+                  <div className="mb-5 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                        Your answer
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Choose the best option for this question.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => toggleBookmark(question.id)}
+                      className="shrink-0 text-muted-foreground transition-colors hover:text-amber-500"
+                      aria-label={isBookmarked ? "Remove bookmark" : "Bookmark question"}
+                    >
+                      {isBookmarked ? (
+                        <BookmarkCheck className="h-5 w-5 text-amber-500" />
+                      ) : (
+                        <Bookmark className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
+
+                  {question.type_question === "multiple-choice" &&
+                    question.answers &&
+                    Object.keys(question.answers).length > 0 && (
+                      <div className="space-y-2">
+                        {Object.entries(question.answers as Record<string, string>).map(([key, label]) => {
+                          const letter = key.replace("answer_", "").toUpperCase();
+                          const letterMap: Record<string, string> = {
+                            "1": "A",
+                            "2": "B",
+                            "3": "C",
+                            "4": "D",
+                          };
+                          const displayLetter = letterMap[letter] ?? letter;
+
+                          return (
+                            <AnswerOption
+                              key={key}
+                              letter={displayLetter}
+                              label={label}
+                              selected={currentAnswer === key}
+                              onSelect={() => setAnswer(question.id, key)}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
+
+                  {question.type_question === "completion" && (
+                    <input
+                      type="text"
+                      value={currentAnswer}
+                      onChange={(e) => setAnswer(question.id, e.target.value)}
+                      placeholder="Enter your answer"
+                      className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    />
+                  )}
+                </div>
+              </div>
+            </ScrollArea>
+          </div>
+        </div>
+      </div>
+
+      <footer className="shrink-0 border-t border-border bg-background">
+        <hr className="border-border" />
+        <div className="flex items-center justify-between gap-3 px-6 py-3">
+          <div className="min-w-0">
+            <p className="text-sm font-medium">{userName}</p>
+            <p className="text-xs text-muted-foreground">{answeredCount}/{totalQuestions} answered</p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => goTo(currentIndex - 1)}
+              disabled={currentIndex === 0}
+              className="h-9 w-9"
+              aria-label="Previous question"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowNavigator((prev) => !prev)}
+                className="min-w-[120px]"
+              >
+                Question {currentIndex + 1} of {totalQuestions}
+              </Button>
+
+              {showNavigator && (
+                <div className="absolute bottom-full left-1/2 mb-2 w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 rounded-xl border border-border bg-background p-3 shadow-xl">
+                  <div className="flex flex-wrap gap-2">
+                    {test.questions.map((q, idx) => {
                       const answered = answers[q.id] != null;
                       const active = idx === currentIndex;
-                      const bm = bookmarks.has(q.id);
+                      const bookmarked = bookmarks.has(q.id);
+
                       return (
                         <button
                           key={q.id}
-                          onClick={() => goTo(idx)}
+                          onClick={() => {
+                            goTo(idx);
+                            setShowNavigator(false);
+                          }}
                           className={cn(
-                            "relative flex h-8 w-8 items-center justify-center rounded-lg text-xs font-semibold transition-colors",
+                            "flex items-center gap-2 rounded-full border px-3 py-2 text-sm transition-colors",
                             active
-                              ? "bg-primary text-primary-foreground"
+                              ? "border-primary bg-primary text-primary-foreground"
                               : answered
-                              ? "bg-primary/20 text-primary"
-                              : "bg-muted text-muted-foreground hover:bg-muted/70"
+                              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-700"
+                              : "border-border bg-background text-muted-foreground hover:text-foreground"
                           )}
                         >
-                          {q.number}
-                          {bm && (
-                            <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-amber-500" />
+                          {answered ? (
+                            <CheckCircle2 className="h-4 w-4" />
+                          ) : (
+                            <Circle className="h-4 w-4" />
                           )}
+                          <span>{q.number}</span>
+                          {bookmarked && <span className="text-amber-500">★</span>}
                         </button>
                       );
                     })}
                   </div>
                 </div>
-              );
-            })}
-          </ScrollArea>
-        </aside>
-
-        {/* Main content */}
-        <div className="flex flex-1 flex-col overflow-hidden">
-          <ScrollArea className="flex-1">
-            <div className="mx-auto max-w-3xl px-8 py-8">
-              {/* Passage (if any) */}
-              {question.passage && (
-                <div className="mb-6 rounded-xl border border-border bg-muted/30 p-6 text-sm leading-relaxed text-foreground/80">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                    Passage
-                  </p>
-                  <p className="whitespace-pre-line">{question.passage}</p>
-                </div>
               )}
-
-              {/* Question */}
-              <div className="space-y-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                      {question.number}
-                    </span>
-                    <p className="text-sm font-medium leading-relaxed text-foreground">
-                      {question.question}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => toggleBookmark(question.id)}
-                    className="shrink-0 text-muted-foreground transition-colors hover:text-amber-500"
-                    aria-label={isBookmarked ? "Remove bookmark" : "Bookmark question"}
-                  >
-                    {isBookmarked ? (
-                      <BookmarkCheck className="h-4 w-4 text-amber-500" />
-                    ) : (
-                      <Bookmark className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-
-                {/* Multiple choice */}
-                {question.type_question === "multiple-choice" &&
-                  question.answers !== "" && (
-                    <div className="space-y-2">
-                      {(
-                        Object.entries(question.answers) as [string, string][]
-                      ).map(([key, label]) => {
-                        const letter = key.replace("answer_", "").toUpperCase();
-                        // Map answer_1 -> A, answer_2 -> B, etc.
-                        const letterMap: Record<string, string> = {
-                          "1": "A",
-                          "2": "B",
-                          "3": "C",
-                          "4": "D",
-                        };
-                        const displayLetter = letterMap[letter] ?? letter;
-                        const answerKey = `answer_${letter.toLowerCase()}`;
-                        return (
-                          <AnswerOption
-                            key={key}
-                            letter={displayLetter}
-                            label={label}
-                            selected={currentAnswer === key}
-                            onSelect={() => setAnswer(question.id, key)}
-                          />
-                        );
-                      })}
-                    </div>
-                  )}
-
-                {/* Free-response / completion */}
-                {question.type_question === "completion" && (
-                  <input
-                    type="text"
-                    value={currentAnswer}
-                    onChange={(e) => setAnswer(question.id, e.target.value)}
-                    placeholder="Enter your answer"
-                    className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  />
-                )}
-              </div>
             </div>
-          </ScrollArea>
 
-          {/* Bottom navigation */}
-          <div className="flex shrink-0 items-center justify-between border-t border-border bg-background px-8 py-4">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => goTo(currentIndex - 1)}
-              disabled={currentIndex === 0}
-              className="gap-1.5"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
-            </Button>
-            <span className="text-xs text-muted-foreground tabular-nums">
-              {currentIndex + 1} / {totalQuestions}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
+              variant="ghost"
+              size="icon"
               onClick={() => goTo(currentIndex + 1)}
               disabled={currentIndex === totalQuestions - 1}
-              className="gap-1.5"
+              className="h-9 w-9"
+              aria-label="Next question"
             >
-              Next
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
+
+          <Button size="sm" onClick={finish} className="gap-1.5">
+            <Send className="h-3.5 w-3.5" />
+            Submit
+          </Button>
         </div>
-      </div>
+      </footer>
+
+      {showCalculator && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4">
+          <div className="flex h-[85vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-border bg-background shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <div>
+                <p className="text-sm font-semibold">Calculator demo</p>
+                <p className="text-xs text-muted-foreground">Quick reference while you work</p>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setShowCalculator(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <iframe
+              title="Calculator demo"
+              src="https://www.desmos.com/scientific"
+              className="h-full w-full"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
