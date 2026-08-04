@@ -181,7 +181,7 @@ export function Layout5({ test }: Layout5Props) {
                     question.answers &&
                     Object.keys(question.answers).length > 0 && (
                       <div className="space-y-2">
-                        {Object.entries(question.answers as Record<string, string>).map(([key, label]) => {
+                        {Object.entries(question.answers).map(([key, label]) => {
                           const letter = key.replace("answer_", "").toUpperCase();
                           const letterMap: Record<string, string> = {
                             "1": "A",

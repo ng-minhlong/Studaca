@@ -1,3 +1,5 @@
+/**Use for ielts speaking */
+
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -134,12 +136,7 @@ export function Layout3({ test }: Layout3Props) {
       <div className="flex flex-1 items-center justify-center overflow-y-auto px-4 py-6">
         {question && (
           <div className="mx-auto w-full max-w-xl space-y-6">
-            {/* Part description */}
-            {part.description && currentQuestionIndex === 0 && (
-              <div className="rounded-xl border border-border bg-muted/30 px-5 py-3 text-sm text-muted-foreground">
-                {part.description}
-              </div>
-            )}
+    
 
             {/* Question card */}
             <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
