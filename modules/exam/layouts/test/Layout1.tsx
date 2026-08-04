@@ -28,7 +28,7 @@ export function Layout1({ test }: Layout1Props) {
   }).length;
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-background">
+    <div className="mt-16 flex h-[calc(100vh-4rem)] flex-col overflow-hidden bg-background">
       {/* Header */}
       <header className="flex shrink-0 items-center justify-between border-b border-border bg-background px-6 py-3">
         <div>
@@ -76,13 +76,9 @@ export function Layout1({ test }: Layout1Props) {
             <h2 className="mb-4 text-base font-semibold leading-snug text-foreground">
               {part.title}
             </h2>
-            <div className="prose prose-sm max-w-none dark:prose-invert">
-              {part.paragraph.split("\n\n").map((para, i) => (
-                <p key={i} className="mb-4 text-sm leading-relaxed text-foreground/90">
-                  {para}
-                </p>
-              ))}
-            </div>
+            <div
+              dangerouslySetInnerHTML={{ __html: part.paragraph }}
+            />
           </div>
         </ScrollArea>
 
@@ -92,9 +88,15 @@ export function Layout1({ test }: Layout1Props) {
             {part.questionRanges.map((range, rIdx) => (
               <div key={rIdx} className="space-y-4">
                 <div className="rounded-lg bg-muted/40 px-4 py-2.5">
-                  <p className="text-xs font-semibold text-muted-foreground">{range.label}</p>
+                  <p className="text-xs font-semibold text-muted-foreground"><div dangerouslySetInnerHTML={{ __html: range.label }} /> </p>
                   {range.description ? (
-                    <p className="mt-2 text-sm leading-relaxed text-foreground/80">{range.description}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-foreground/80">
+                      <div
+                          dangerouslySetInnerHTML={{ __html: range.description }}
+                      />
+                      
+                     
+                    </p>
                   ) : null}
                 </div>
                 <div className="space-y-4">

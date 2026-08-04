@@ -27,7 +27,7 @@ export function Layout2({ test }: Layout2Props) {
   }).length;
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-background">
+    <div className="mt-16 flex h-[calc(100vh-4rem)] flex-col overflow-hidden bg-background">
       {/* Header */}
       <header className="flex shrink-0 items-center justify-between border-b border-border bg-background px-6 py-3">
         <div>
@@ -99,7 +99,10 @@ export function Layout2({ test }: Layout2Props) {
               <div className="rounded-lg bg-muted/40 px-4 py-2.5">
                 <p className="text-xs font-semibold text-muted-foreground">{range.label}</p>
                 {range.description ? (
-                  <p className="mt-2 text-sm leading-relaxed text-foreground/80">{range.description}</p>
+                  <div
+                    className="mt-2 text-sm leading-relaxed text-foreground/80"
+                    dangerouslySetInnerHTML={{ __html: range.description }}
+                  />
                 ) : null}
               </div>
               {range.questions.map((q) => (

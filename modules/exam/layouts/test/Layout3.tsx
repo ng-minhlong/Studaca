@@ -95,7 +95,7 @@ export function Layout3({ test }: Layout3Props) {
   }, [question?.id, recordings, recordState, stopRecording]);
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-background">
+    <div className="mt-16 flex h-[calc(100vh-4rem)] flex-col overflow-hidden bg-background">
       {/* Header */}
       <header className="flex shrink-0 items-center justify-between border-b border-border bg-background px-6 py-3">
         <div>

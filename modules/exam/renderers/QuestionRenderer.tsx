@@ -1,3 +1,6 @@
+/**Apply only to layout 1 and layout 2 - Ielts Listening and Ielts Reading */
+
+
 "use client";
 
 import { cn } from "@/lib/utils";
@@ -23,7 +26,7 @@ export function QuestionRenderer({
           Question {question.number}
         </p>
       )}
-      <p className="text-sm leading-relaxed text-foreground">{question.question}</p>
+      <p className="text-sm leading-relaxed text-foreground"><div dangerouslySetInnerHTML={{ __html: question.question }} /> </p>
 
       {question.type_question === "multiple-choice" && question.answers_option && (
         <div className="space-y-2">

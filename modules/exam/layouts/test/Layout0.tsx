@@ -32,7 +32,7 @@ export function Layout0({ test }: Layout0Props) {
   }).length;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="mt-16 flex h-[calc(100vh-4rem)] overflow-hidden bg-background">
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header */}
