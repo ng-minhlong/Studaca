@@ -2,31 +2,59 @@
 
 "use client";
 
-import { ChevronLeft, ChevronRight, Send, Volume2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight, Send, Volume2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useExam } from "../../engine";
 import { QuestionRenderer } from "../../renderers/QuestionRenderer";
 import { ExamTimer } from "../../components/ExamTimer";
 import type { Layout2Test } from "../../types";
 import { cn } from "@/lib/utils";
+import { analyzeTestNumbering } from "../../utils/examNumbering";
+import { submitExamAnswers } from "../../utils/submitExam";
 
 interface Layout2Props {
   test: Layout2Test;
 }
 
 export function Layout2({ test }: Layout2Props) {
+  const router = useRouter();
   const { state, setAnswer, nextPart, prevPart, finish } = useExam();
   const { currentPartIndex, answers, timeRemainingSeconds } = state;
+  const [submitting, setSubmitting] = useState(false);
 
+  const numbering = useMemo(() => analyzeTestNumbering(test.parts), [test.parts]);
+  const currentPartMeta = numbering.parts[currentPartIndex];
   const part = test.parts[currentPartIndex];
 
-  const allQuestions = test.parts.flatMap((p) =>
-    p.questionRanges.flatMap((r) => r.questions)
-  );
-  const answeredCount = allQuestions.filter((q) => {
-    const a = answers[q.id];
+  // Count answered questions based on mapped answer keys
+  const answeredCount = Object.keys(numbering.questionNumberMap).filter((key) => {
+    const a = answers[key];
     return a !== undefined && a !== "" && !(Array.isArray(a) && a.length === 0);
   }).length;
+
+  const handleSubmit = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const result = await submitExamAnswers({
+        test,
+        answers,
+        timeRemainingSeconds,
+      });
+      finish();
+      router.push(`/result/${test.type}/${result.idResult}`);
+    } catch (err) {
+      console.error("Submit error:", err);
+      finish();
+      if (test.idResult) {
+        router.push(`/result/${test.type}/${test.idResult}`);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="mt-16 flex h-[calc(100vh-4rem)] flex-col overflow-hidden bg-background">
@@ -35,13 +63,23 @@ export function Layout2({ test }: Layout2Props) {
         <div>
           <h1 className="text-sm font-semibold">{test.title}</h1>
           <p className="text-xs text-muted-foreground">
-            Part {currentPartIndex + 1} of {test.parts.length} · {answeredCount}/{allQuestions.length} answered
+            Part {currentPartIndex + 1} of {test.parts.length} · {answeredCount}/{numbering.totalQuestions} answered
           </p>
         </div>
         <div className="flex items-center gap-4">
           <ExamTimer seconds={timeRemainingSeconds} />
-          <Button size="sm" onClick={finish} variant="outline" className="gap-1.5">
-            <Send className="h-3.5 w-3.5" />
+          <Button
+            size="sm"
+            onClick={handleSubmit}
+            disabled={submitting}
+            variant="outline"
+            className="gap-1.5"
+          >
+            {submitting ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Send className="h-3.5 w-3.5" />
+            )}
             Submit
           </Button>
         </div>
@@ -49,27 +87,30 @@ export function Layout2({ test }: Layout2Props) {
 
       {/* Part tabs */}
       <div className="flex shrink-0 gap-1 border-b border-border bg-muted/30 px-6 py-2">
-        {test.parts.map((p, idx) => (
-          <button
-            key={p.id}
-            onClick={() => {
-              const diff = idx - currentPartIndex;
-              if (diff < 0) {
-                for (let i = 0; i < Math.abs(diff); i++) prevPart();
-              } else {
-                for (let i = 0; i < diff; i++) nextPart();
-              }
-            }}
-            className={cn(
-              "rounded-md px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors",
-              idx === currentPartIndex
-                ? "bg-background text-foreground shadow-sm border border-border"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            Part {idx + 1}
-          </button>
-        ))}
+        {test.parts.map((p, idx) => {
+          const pMeta = numbering.parts[idx];
+          return (
+            <button
+              key={p.id}
+              onClick={() => {
+                const diff = idx - currentPartIndex;
+                if (diff < 0) {
+                  for (let i = 0; i < Math.abs(diff); i++) prevPart();
+                } else {
+                  for (let i = 0; i < diff; i++) nextPart();
+                }
+              }}
+              className={cn(
+                "rounded-md px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors",
+                idx === currentPartIndex
+                  ? "bg-background text-foreground shadow-sm border border-border"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Part {idx + 1} ({pMeta?.startNumber}-{pMeta?.endNumber})
+            </button>
+          );
+        })}
       </div>
 
       {/* Content */}
@@ -96,28 +137,51 @@ export function Layout2({ test }: Layout2Props) {
           </div>
 
           {/* Question ranges */}
-          {part.questionRanges.map((range, rIdx) => (
-            <div key={rIdx} className="space-y-4">
-              <div className="rounded-lg bg-muted/40 px-4 py-2.5">
-                <p className="text-xs font-semibold text-muted-foreground">{range.label}</p>
-                {range.description ? (
-                  <div
-                    className="mt-2 text-sm leading-relaxed text-foreground/80"
-                    dangerouslySetInnerHTML={{ __html: range.description }}
-                  />
-                ) : null}
-              </div>
-              {range.questions.map((q) => (
-                <div key={q.id} className="rounded-xl border border-border bg-card p-4 shadow-sm">
-                  <QuestionRenderer
-                    question={q}
-                    answer={answers[q.id]}
-                    onAnswer={(val) => setAnswer(q.id, val)}
-                  />
+          {part.questionRanges.map((range, rIdx) => {
+            const rangeMeta = currentPartMeta?.ranges[rIdx];
+            const rangeLabelText =
+              rangeMeta && rangeMeta.totalQuestions > 0
+                ? rangeMeta.startNumber === rangeMeta.endNumber
+                  ? `Question ${rangeMeta.startNumber}`
+                  : `Questions ${rangeMeta.startNumber} - ${rangeMeta.endNumber}`
+                : (range.label !== "unknown" ? range.label : `Questions`);
+
+            return (
+              <div key={rIdx} className="space-y-4">
+                <div className="rounded-lg bg-muted/40 px-4 py-2.5">
+                  <div className="text-xs font-semibold text-muted-foreground">
+                    {rangeLabelText}
+                  </div>
+                  {range.description ? (
+                    <div
+                      className="mt-2 text-sm leading-relaxed text-foreground/80"
+                      dangerouslySetInnerHTML={{ __html: range.description }}
+                    />
+                  ) : null}
                 </div>
-              ))}
-            </div>
-          ))}
+                {range.questions.map((q) => {
+                  const firstItem = rangeMeta?.items.find((item) => item.questionId === q.id);
+                  const displayNum = firstItem?.globalNumber ?? q.number;
+                  const uniqueKey = `${part.id}_${q.id}`;
+
+                  return (
+                    <div key={q.id} className="rounded-xl border border-border bg-card p-4 shadow-sm">
+                      <QuestionRenderer
+                        question={q}
+                        partId={part.id}
+                        rangeType={range.type_question}
+                        answer={answers[uniqueKey] ?? answers[q.id]}
+                        answersMap={answers}
+                        onAnswer={(val) => setAnswer(uniqueKey, val)}
+                        onAnswerKey={(key, val) => setAnswer(key, val)}
+                        displayNumber={displayNum}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
 
           {/* Navigation */}
           <div className="flex justify-between pb-4">

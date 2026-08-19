@@ -3,6 +3,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Bookmark,
   BookmarkCheck,
@@ -13,6 +14,7 @@ import {
   Circle,
   Send,
   X,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +24,7 @@ import { ExamTimer } from "../../components/ExamTimer";
 import { authClient } from "@/lib/auth-client";
 import type { Layout5Test, SatQuestion } from "../../types";
 import { cn } from "@/lib/utils";
+import { submitExamAnswers } from "../../utils/submitExam";
 
 interface Layout5Props {
   test: Layout5Test;
@@ -64,9 +67,11 @@ function AnswerOption({
 }
 
 export function Layout5({ test }: Layout5Props) {
+  const router = useRouter();
   const { state, setAnswer, toggleBookmark, finish } = useExam();
   const { answers, bookmarks, timeRemainingSeconds } = state;
   const { data: session } = authClient.useSession();
+  const [submitting, setSubmitting] = useState(false);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showNavigator, setShowNavigator] = useState(false);
@@ -82,6 +87,29 @@ export function Layout5({ test }: Layout5Props) {
 
   const goTo = (idx: number) => {
     if (idx >= 0 && idx < totalQuestions) setCurrentIndex(idx);
+  };
+
+  const handleSubmit = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const result = await submitExamAnswers({
+        test,
+        answers,
+        timeRemainingSeconds,
+        userId: session?.user?.id,
+      });
+      finish();
+      router.push(`/result/${test.type}/${result.idResult}`);
+    } catch (err) {
+      console.error("Submit error:", err);
+      finish();
+      if (test.idResult) {
+        router.push(`/result/${test.type}/${test.idResult}`);
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -301,8 +329,17 @@ export function Layout5({ test }: Layout5Props) {
             </Button>
           </div>
 
-          <Button size="sm" onClick={finish} className="gap-1.5">
-            <Send className="h-3.5 w-3.5" />
+          <Button
+            size="sm"
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="gap-1.5"
+          >
+            {submitting ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Send className="h-3.5 w-3.5" />
+            )}
             Submit
           </Button>
         </div>

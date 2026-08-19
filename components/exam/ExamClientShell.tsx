@@ -7,16 +7,20 @@ import type { AnyTest } from "@/modules/exam/types";
 
 interface ExamClientShellProps {
   test: AnyTest;
+  idResult: string;
 }
 
-export function ExamClientShell({ test }: ExamClientShellProps) {
+export function ExamClientShell({ test, idResult }: ExamClientShellProps) {
   const router = useRouter();
+
+  const handleFinish = () => {
+    // router.push(`/result/${test.type}/${test.id_test}-result-001`)
+  };
 
   return (
     <ExamProvider
       test={test}
-      onFinish={() => router.push(`/result/${test.type}/${test.id_test}-result-001`)}
-
+      onFinish={handleFinish}
     >
       <ExamRenderer test={test} />
     </ExamProvider>

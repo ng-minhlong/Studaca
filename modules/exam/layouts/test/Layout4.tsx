@@ -3,7 +3,8 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Send, Image as ImageIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight, Send, Image as ImageIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useExam } from "../../engine";
@@ -11,14 +12,17 @@ import { ExamTimer } from "../../components/ExamTimer";
 import type { Layout4Test } from "../../types";
 import { countWords } from "../../utils";
 import { cn } from "@/lib/utils";
+import { submitExamAnswers } from "../../utils/submitExam";
 
 interface Layout4Props {
   test: Layout4Test;
 }
 
 export function Layout4({ test }: Layout4Props) {
-  const { state, nextPart, prevPart, setPart, finish } = useExam();
+  const router = useRouter();
+  const { state, setAnswer, nextPart, prevPart, setPart, finish } = useExam();
   const { currentPartIndex, timeRemainingSeconds } = state;
+  const [submitting, setSubmitting] = useState(false);
 
   // Preserve text per task
   const [texts, setTexts] = useState<Record<string, string>>({});
@@ -28,6 +32,34 @@ export function Layout4({ test }: Layout4Props) {
   const wordCount = countWords(text);
   const meetsMin = part ? wordCount >= part.min_words : false;
   const totalParts = test.parts.length;
+
+  const handleTextChange = (value: string) => {
+    if (!part) return;
+    setTexts((prev) => ({ ...prev, [part.id]: value }));
+    setAnswer(part.id, value);
+  };
+
+  const handleSubmit = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const result = await submitExamAnswers({
+        test,
+        answers: texts,
+        timeRemainingSeconds,
+      });
+      finish();
+      router.push(`/result/${test.type}/${result.idResult}`);
+    } catch (err) {
+      console.error("Submit error:", err);
+      finish();
+      if (test.idResult) {
+        router.push(`/result/${test.type}/${test.idResult}`);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="mt-16 flex h-[calc(100vh-4rem)] flex-col overflow-hidden bg-background">
@@ -41,8 +73,18 @@ export function Layout4({ test }: Layout4Props) {
         </div>
         <div className="flex items-center gap-4">
           <ExamTimer seconds={timeRemainingSeconds} />
-          <Button size="sm" onClick={finish} variant="outline" className="gap-1.5">
-            <Send className="h-3.5 w-3.5" />
+          <Button
+            size="sm"
+            onClick={handleSubmit}
+            disabled={submitting}
+            variant="outline"
+            className="gap-1.5"
+          >
+            {submitting ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Send className="h-3.5 w-3.5" />
+            )}
             Submit
           </Button>
         </div>
@@ -121,9 +163,7 @@ export function Layout4({ test }: Layout4Props) {
           </div>
           <textarea
             value={text}
-            onChange={(e) =>
-              setTexts((prev) => ({ ...prev, [part?.id ?? "default"]: e.target.value }))
-            }
+            onChange={(e) => handleTextChange(e.target.value)}
             placeholder={`Write your ${part?.task_label ?? "task"} response here…`}
             className="flex-1 resize-none bg-background px-5 py-4 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none"
             spellCheck

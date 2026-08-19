@@ -701,5 +701,9 @@ export async function hasValidTestSession(type: ExamType, idTest: string, idResu
 export async function getDbTestForSession(type: ExamType, idTest: string, idResult: string): Promise<AnyTest | null> {
   const isValid = await hasValidTestSession(type, idTest, idResult);
   if (!isValid) return null;
-  return getDbTest(type, idTest);
+  const test = await getDbTest(type, idTest);
+  if (test) {
+    (test as any).idResult = idResult;
+  }
+  return test;
 }

@@ -75,5 +75,13 @@ export function getMockTest(type: ExamType, id: string): AnyTest | null {
 }
 
 export function getMockResult(type: ExamType, idResult: string): AnyResult | null {
-  return RESULT_REGISTRY[`${type}:${idResult}`] ?? null;
+  if (RESULT_REGISTRY[`${type}:${idResult}`]) {
+    return RESULT_REGISTRY[`${type}:${idResult}`];
+  }
+  // Fallback to default mock result for the test type
+  const fallbackKey = Object.keys(RESULT_REGISTRY).find((k) => k.startsWith(`${type}:`));
+  if (fallbackKey && RESULT_REGISTRY[fallbackKey]) {
+    return { ...RESULT_REGISTRY[fallbackKey], idResult };
+  }
+  return null;
 }

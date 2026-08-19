@@ -19,10 +19,10 @@ export default async function TestPage({ params }: TestPageProps) {
   if (!response.ok) notFound();
 
   const data = await response.json();
-  console.log("data: ", JSON.stringify(data, null, 2));
+  //console.log("data: ", JSON.stringify(data, null, 2));
   const test = data?.test;
 
   if (!test) notFound();
 
-  return <ExamClientShell test={test} />;
+  return <ExamClientShell test={test} idResult={idResult} />;
 }

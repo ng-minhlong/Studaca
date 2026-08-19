@@ -132,6 +132,7 @@ export interface SatQuestion {
 
 export interface BaseTest {
   id_test: string;
+  idResult?: string;
   type: ExamType;
   title: string;
   duration_minutes: number;
